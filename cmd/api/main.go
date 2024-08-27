@@ -1,10 +1,15 @@
 package main
 
-import "log"
+import (
+	"github.com/trenchesdeveloper/social-blue/config"
+	"log"
+)
 
 func main() {
-	cfg := config{
-		addr: ":8000",
+	cfg, err := config.LoadConfig(".")
+
+	if err != nil {
+		panic(err)
 	}
 	app := &server{
 		config: cfg,
