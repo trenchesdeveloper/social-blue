@@ -10,6 +10,7 @@ type AppConfig struct {
 	MigrationURL string `mapstructure:"MIGRATION_URL"`
 	DBSource     string `mapstructure:"DB_SOURCE"`
 	AppSecret    string `mapsctructure:"APP_SECRET"`
+	DBdriver     string `mapstructure:"DB_DRIVER"`
 }
 
 func LoadConfig(path string) (*AppConfig, error) {

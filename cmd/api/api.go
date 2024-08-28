@@ -4,15 +4,17 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/trenchesdeveloper/social-blue/config"
-	"github.com/trenchesdeveloper/social-blue/internal/store"
+	"github.com/trenchesdeveloper/social-blue/internal/db"
 	"log"
 	"net/http"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
 type server struct {
 	config *config.AppConfig
-	store  store.Storage
+	store  db.Storage
 }
 
 func (s *server) mount() http.Handler {

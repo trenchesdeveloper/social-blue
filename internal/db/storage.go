@@ -1,4 +1,4 @@
-package store
+package db
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 
 type Storage struct {
 	Posts interface {
-		Create(ctx context.Context) error
+		Create(ctx context.Context, post *Post) error
 	}
 	Users interface {
 		Create(ctx context.Context) error

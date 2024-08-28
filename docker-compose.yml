@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  postgres:
+    container_name: social_postgres
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: social
+    ports:
+      - "5435:5432"
+
+  postgres-live:
+    container_name: social_postgres_live
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: social
+    ports:
+      - "5434:5432"

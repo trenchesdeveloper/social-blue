@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"github.com/trenchesdeveloper/social-blue/config"
-	"github.com/trenchesdeveloper/social-blue/internal/store"
+	"github.com/trenchesdeveloper/social-blue/internal/db"
 	"log"
+	"time"
 )
 
 func main() {
@@ -12,7 +15,23 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	storage := store.NewStorage(nil)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	conn, err := sql.Open(cfg.DBdriver, cfg.DBSource)
+	if err != nil {
+		log.Fatal(err)
+	}
+	conn.SetMaxOpenConns(30)
+	conn.SetMaxIdleConns(30)
+	err = conn.PingContext(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+	log.Println("Database connection established")
+	storage := db.NewStorage(conn)
+
 	app := &server{
 		config: cfg,
 		store:  storage,
