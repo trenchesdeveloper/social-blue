@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/trenchesdeveloper/social-blue/config"
-	"github.com/trenchesdeveloper/social-blue/internal/db"
+	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
 	"log"
 	"time"
 )
@@ -30,7 +30,7 @@ func main() {
 	}
 	defer conn.Close()
 	log.Println("Database connection established")
-	storage := db.NewStorage(conn)
+	storage := db.NewStore(conn)
 
 	app := &server{
 		config: cfg,
