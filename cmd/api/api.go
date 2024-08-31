@@ -27,6 +27,14 @@ func (s *server) mount() http.Handler {
 	r.Use(middleware.Timeout(60 * time.Second))
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/health", s.healthCheckHandler)
+
+		r.Route("/posts", func(r chi.Router) {
+			//r.Get("/", s.listPosts)
+			r.Post("/", s.createPostHandler)
+			//r.Get("/{id}", s.getPost)
+			//r.Put("/{id}", s.updatePost)
+			//r.Delete("/{id}", s.deletePost)
+		})
 	})
 
 	return r
