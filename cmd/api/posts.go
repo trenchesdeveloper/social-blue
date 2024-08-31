@@ -12,8 +12,13 @@ import (
 )
 
 func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
-	var input dto.Post
+	var input dto.CreatPostDto
 	if err := readJSON(w, r, &input); err != nil {
+		s.badRequestError(w, r, err)
+		return
+	}
+
+	if err := Validate.Struct(input); err != nil {
 		s.badRequestError(w, r, err)
 		return
 	}

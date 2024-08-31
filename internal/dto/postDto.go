@@ -1,9 +1,7 @@
 package dto
 
-type Post struct {
-	ID      int64    `json:"id"`
-	Content string   `json:"content"`
-	Title   string   `json:"title"`
-	UserID  int64    `json:"user_id"`
+type CreatPostDto struct {
+	Content string   `json:"content" validate:"required,max=1000"`
+	Title   string   `json:"title" validate:"required,max=100"`
 	Tags    []string `json:"tags"`
 }
