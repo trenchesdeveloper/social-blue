@@ -29,9 +29,12 @@ func (s *server) mount() http.Handler {
 		r.Get("/health", s.healthCheckHandler)
 
 		r.Route("/posts", func(r chi.Router) {
-			//r.Get("/", s.listPosts)
 			r.Post("/", s.createPostHandler)
-			//r.Get("/{id}", s.getPost)
+			r.Route("/{postID}", func(r chi.Router) {
+				r.Get("/", s.getPostHandler)
+				//r.Put("/", s.updatePostHandler)
+				//r.Delete("/", s.deletePostHandler)
+			})
 			//r.Put("/{id}", s.updatePost)
 			//r.Delete("/{id}", s.deletePost)
 		})
