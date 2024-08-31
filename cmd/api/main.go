@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+const version = "0.0.1"
+
 func main() {
 	cfg, err := config.LoadConfig(".")
 

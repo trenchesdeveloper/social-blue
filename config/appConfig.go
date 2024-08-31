@@ -11,6 +11,7 @@ type AppConfig struct {
 	DBSource     string `mapstructure:"DB_SOURCE"`
 	AppSecret    string `mapsctructure:"APP_SECRET"`
 	DBdriver     string `mapstructure:"DB_DRIVER"`
+	Environment  string `mapstructure:"ENVIRONMENT"`
 }
 
 func LoadConfig(path string) (*AppConfig, error) {
