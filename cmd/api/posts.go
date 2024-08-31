@@ -59,6 +59,24 @@ func (s *server) getPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, post)
+	// fetch the comments
+	comments, err := s.store.GetCommentsByPostID(r.Context(), id)
+	if err != nil {
+		s.internalServerError(w, r, err)
+		return
+	}
+
+	postWithComments := dto.GetPostWithCommentsDto{
+		ID:        post.ID,
+		Content:   post.Content,
+		Title:     post.Title,
+		UserID:    post.UserID,
+		Tags:      post.Tags,
+		CreatedAt: post.CreatedAt,
+		UpdatedAt: post.UpdatedAt,
+		Comments:  comments,
+	}
+
+	writeJSON(w, http.StatusOK, postWithComments)
 
 }

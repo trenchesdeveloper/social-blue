@@ -1,7 +1,23 @@
 package dto
 
+import (
+	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
+	"time"
+)
+
 type CreatPostDto struct {
 	Content string   `json:"content" validate:"required,max=1000"`
 	Title   string   `json:"title" validate:"required,max=100"`
 	Tags    []string `json:"tags"`
+}
+
+type GetPostWithCommentsDto struct {
+	ID        int64                       `json:"id"`
+	Content   string                      `json:"content"`
+	Title     string                      `json:"title"`
+	UserID    int64                       `json:"user_id"`
+	Tags      []string                    `json:"tags"`
+	CreatedAt time.Time                   `json:"created_at"`
+	UpdatedAt time.Time                   `json:"updated_at"`
+	Comments  []db.GetCommentsByPostIDRow `json:"comments"`
 }
