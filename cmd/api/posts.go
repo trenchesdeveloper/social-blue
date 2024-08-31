@@ -14,7 +14,7 @@ import (
 func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
 	var input dto.Post
 	if err := readJSON(w, r, &input); err != nil {
-		writeJSONError(w, http.StatusBadRequest, err.Error())
+		s.badRequestError(w, r, err)
 		return
 	}
 
@@ -26,7 +26,7 @@ func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, err.Error())
+		s.internalServerError(w, r, err)
 		return
 	}
 
@@ -41,16 +41,16 @@ func (s *server) getPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.ParseInt(postID, 10, 64)
 	if err != nil {
-		writeJSONError(w, http.StatusBadRequest, err.Error())
+		s.internalServerError(w, r, err)
 		return
 	}
 	post, err := s.store.GetPostByID(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			writeJSONError(w, http.StatusNotFound, "post not found")
+			s.notFoundError(w, r)
 			return
 		}
-		writeJSONError(w, http.StatusInternalServerError, err.Error())
+		s.internalServerError(w, r, err)
 		return
 	}
 
