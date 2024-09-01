@@ -66,15 +66,18 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, username, email, created_at, updated_at
+SELECT id, first_name, last_name, username, email, password, created_at, updated_at
 FROM users
 WHERE id = $1
 `
 
 type GetUserByIDRow struct {
 	ID        int64     `json:"id"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
 	Username  string    `json:"username"`
 	Email     string    `json:"email"`
+	Password  []byte    `json:"password"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -84,8 +87,11 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, er
 	var i GetUserByIDRow
 	err := row.Scan(
 		&i.ID,
+		&i.FirstName,
+		&i.LastName,
 		&i.Username,
 		&i.Email,
+		&i.Password,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

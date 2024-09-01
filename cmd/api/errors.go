@@ -5,6 +5,10 @@ import (
 	"net/http"
 )
 
+const (
+	ErrorNotFound = "sql.ErrNoRows"
+)
+
 func (s *server) internalServerError(w http.ResponseWriter, r *http.Request, err error) {
 	log.Printf("Internal server error: %s path=%s: error: %s", r.Method, r.URL.Path, err)
 	writeJSONError(w, http.StatusInternalServerError, "Something went wrong")

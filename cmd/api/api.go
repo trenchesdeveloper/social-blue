@@ -36,8 +36,16 @@ func (s *server) mount() http.Handler {
 				r.Patch("/", s.updatePostHandler)
 				r.Delete("/", s.deletePostHandler)
 			})
+
 			//r.Put("/{id}", s.updatePost)
 			//r.Delete("/{id}", s.deletePost)
+		})
+
+		r.Route("/users", func(r chi.Router) {
+			//r.Post("/", s.createUserHandler)
+			r.Route("/{userID}", func(r chi.Router) {
+				r.Get("/", s.getUserHandler)
+			})
 		})
 	})
 
