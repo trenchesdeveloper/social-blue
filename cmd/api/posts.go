@@ -40,7 +40,7 @@ func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, post)
+	jsonRespose(w, http.StatusOK, post)
 
 }
 
@@ -70,7 +70,7 @@ func (s *server) getPostHandler(w http.ResponseWriter, r *http.Request) {
 		Comments:  comments,
 	}
 
-	writeJSON(w, http.StatusOK, postWithComments)
+	jsonRespose(w, http.StatusOK, postWithComments)
 
 }
 
@@ -109,7 +109,7 @@ func (s *server) updatePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, UpdatedPost)
+	jsonRespose(w, http.StatusOK, UpdatedPost)
 }
 
 func (s *server) deletePostHandler(w http.ResponseWriter, r *http.Request) {
