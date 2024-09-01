@@ -15,9 +15,13 @@ ORDER BY created_at DESC;
 
 -- name: UpdatePost :one
 UPDATE posts
-SET content = $2, title = $3, tags = $4, updated_at = now()
-WHERE id = $1
-RETURNING id, content, title, user_id, tags, created_at, updated_at;
+SET
+     content = COALESCE(NULLIF($2, ''), content),
+    title = COALESCE(NULLIF($3, ''), title),
+     tags = COALESCE(NULLIF($4::text[], '{}'), tags),
+    updated_at = now()
+ WHERE id = $1
+    RETURNING id, content, title, user_id, tags, created_at, updated_at;
 
 -- name: DeletePost :exec
 DELETE FROM posts

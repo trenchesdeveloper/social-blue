@@ -114,24 +114,28 @@ func (q *Queries) ListPosts(ctx context.Context) ([]Post, error) {
 
 const updatePost = `-- name: UpdatePost :one
 UPDATE posts
-SET content = $2, title = $3, tags = $4, updated_at = now()
-WHERE id = $1
-RETURNING id, content, title, user_id, tags, created_at, updated_at
+SET
+     content = COALESCE(NULLIF($2, ''), content),
+    title = COALESCE(NULLIF($3, ''), title),
+     tags = COALESCE(NULLIF($4::text[], '{}'), tags),
+    updated_at = now()
+ WHERE id = $1
+    RETURNING id, content, title, user_id, tags, created_at, updated_at
 `
 
 type UpdatePostParams struct {
-	ID      int64    `json:"id"`
-	Content string   `json:"content"`
-	Title   string   `json:"title"`
-	Tags    []string `json:"tags"`
+	ID      int64       `json:"id"`
+	Column2 interface{} `json:"column_2"`
+	Column3 interface{} `json:"column_3"`
+	Column4 []string    `json:"column_4"`
 }
 
 func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, error) {
 	row := q.db.QueryRowContext(ctx, updatePost,
 		arg.ID,
-		arg.Content,
-		arg.Title,
-		pq.Array(arg.Tags),
+		arg.Column2,
+		arg.Column3,
+		pq.Array(arg.Column4),
 	)
 	var i Post
 	err := row.Scan(

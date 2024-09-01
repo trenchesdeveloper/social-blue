@@ -11,6 +11,12 @@ type CreatPostDto struct {
 	Tags    []string `json:"tags"`
 }
 
+type UpdatePostDto struct {
+	Content string   `json:"content" validate:"omitempty,max=1000"`
+	Title   string   `json:"title" validate:"omitempty,max=100"`
+	Tags    []string `json:"tags" validate:"omitempty"`
+}
+
 type GetPostWithCommentsDto struct {
 	ID        int64                       `json:"id"`
 	Content   string                      `json:"content"`
