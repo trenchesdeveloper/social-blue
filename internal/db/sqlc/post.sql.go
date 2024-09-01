@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/lib/pq"
 )
@@ -14,7 +15,7 @@ import (
 const createPost = `-- name: CreatePost :one
 INSERT INTO posts (content, title, user_id, tags)
 VALUES ($1, $2, $3, $4)
-RETURNING id, content, title, user_id, tags, created_at, updated_at
+RETURNING id, content, title, user_id, tags, version, created_at, updated_at
 `
 
 type CreatePostParams struct {
@@ -24,20 +25,32 @@ type CreatePostParams struct {
 	Tags    []string `json:"tags"`
 }
 
-func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, error) {
+type CreatePostRow struct {
+	ID        int64     `json:"id"`
+	Content   string    `json:"content"`
+	Title     string    `json:"title"`
+	UserID    int64     `json:"user_id"`
+	Tags      []string  `json:"tags"`
+	Version   int64     `json:"version"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (CreatePostRow, error) {
 	row := q.db.QueryRowContext(ctx, createPost,
 		arg.Content,
 		arg.Title,
 		arg.UserID,
 		pq.Array(arg.Tags),
 	)
-	var i Post
+	var i CreatePostRow
 	err := row.Scan(
 		&i.ID,
 		&i.Content,
 		&i.Title,
 		&i.UserID,
 		pq.Array(&i.Tags),
+		&i.Version,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -55,20 +68,32 @@ func (q *Queries) DeletePost(ctx context.Context, id int64) error {
 }
 
 const getPostByID = `-- name: GetPostByID :one
-SELECT id, content, title, user_id, tags, created_at, updated_at
+SELECT id, content, title, user_id, tags, version, created_at, updated_at
 FROM posts
 WHERE id = $1
 `
 
-func (q *Queries) GetPostByID(ctx context.Context, id int64) (Post, error) {
+type GetPostByIDRow struct {
+	ID        int64     `json:"id"`
+	Content   string    `json:"content"`
+	Title     string    `json:"title"`
+	UserID    int64     `json:"user_id"`
+	Tags      []string  `json:"tags"`
+	Version   int64     `json:"version"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func (q *Queries) GetPostByID(ctx context.Context, id int64) (GetPostByIDRow, error) {
 	row := q.db.QueryRowContext(ctx, getPostByID, id)
-	var i Post
+	var i GetPostByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.Content,
 		&i.Title,
 		&i.UserID,
 		pq.Array(&i.Tags),
+		&i.Version,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -76,26 +101,38 @@ func (q *Queries) GetPostByID(ctx context.Context, id int64) (Post, error) {
 }
 
 const listPosts = `-- name: ListPosts :many
-SELECT id, content, title, user_id, tags, created_at, updated_at
+SELECT id, content, title, user_id, tags,version, created_at, updated_at
 FROM posts
 ORDER BY created_at DESC
 `
 
-func (q *Queries) ListPosts(ctx context.Context) ([]Post, error) {
+type ListPostsRow struct {
+	ID        int64     `json:"id"`
+	Content   string    `json:"content"`
+	Title     string    `json:"title"`
+	UserID    int64     `json:"user_id"`
+	Tags      []string  `json:"tags"`
+	Version   int64     `json:"version"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func (q *Queries) ListPosts(ctx context.Context) ([]ListPostsRow, error) {
 	rows, err := q.db.QueryContext(ctx, listPosts)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Post{}
+	items := []ListPostsRow{}
 	for rows.Next() {
-		var i Post
+		var i ListPostsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Content,
 			&i.Title,
 			&i.UserID,
 			pq.Array(&i.Tags),
+			&i.Version,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -118,9 +155,10 @@ SET
      content = COALESCE(NULLIF($2, ''), content),
     title = COALESCE(NULLIF($3, ''), title),
      tags = COALESCE(NULLIF($4::text[], '{}'), tags),
+        version = version + 1,
     updated_at = now()
- WHERE id = $1
-    RETURNING id, content, title, user_id, tags, created_at, updated_at
+ WHERE id = $1 AND version = $5
+    RETURNING id, content, title, user_id, tags, version, created_at, updated_at
 `
 
 type UpdatePostParams struct {
@@ -128,22 +166,36 @@ type UpdatePostParams struct {
 	Column2 interface{} `json:"column_2"`
 	Column3 interface{} `json:"column_3"`
 	Column4 []string    `json:"column_4"`
+	Version int64       `json:"version"`
 }
 
-func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, error) {
+type UpdatePostRow struct {
+	ID        int64     `json:"id"`
+	Content   string    `json:"content"`
+	Title     string    `json:"title"`
+	UserID    int64     `json:"user_id"`
+	Tags      []string  `json:"tags"`
+	Version   int64     `json:"version"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (UpdatePostRow, error) {
 	row := q.db.QueryRowContext(ctx, updatePost,
 		arg.ID,
 		arg.Column2,
 		arg.Column3,
 		pq.Array(arg.Column4),
+		arg.Version,
 	)
-	var i Post
+	var i UpdatePostRow
 	err := row.Scan(
 		&i.ID,
 		&i.Content,
 		&i.Title,
 		&i.UserID,
 		pq.Array(&i.Tags),
+		&i.Version,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

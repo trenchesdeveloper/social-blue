@@ -93,11 +93,14 @@ func (s *server) updatePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Println("current post", post)
+
 	UpdatedPost, err := s.store.UpdatePost(r.Context(), db.UpdatePostParams{
 		ID:      post.ID,
 		Column2: input.Content,
 		Column3: input.Title,
 		Column4: input.Tags,
+		Version: post.Version,
 	})
 
 	if err != nil {
@@ -148,6 +151,7 @@ func (s *server) postsContextMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		post, err := s.store.GetPostByID(r.Context(), id)
+		log.Println("post from db", post)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				s.notFoundError(w, r)
@@ -162,10 +166,12 @@ func (s *server) postsContextMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (s *server) getPostFromCtx(ctx context.Context) (db.Post, error) {
-	post, ok := ctx.Value(postKey).(db.Post)
+func (s *server) getPostFromCtx(ctx context.Context) (db.GetPostByIDRow, error) {
+	post, ok := ctx.Value(postKey).(db.GetPostByIDRow)
+
 	if !ok {
-		return db.Post{}, errors.New("post not found")
+		return db.GetPostByIDRow{}, errors.New("post not found")
 	}
+	log.Println("post from context", post)
 	return post, nil
 }
