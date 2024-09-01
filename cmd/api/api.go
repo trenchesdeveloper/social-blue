@@ -44,7 +44,9 @@ func (s *server) mount() http.Handler {
 		r.Route("/users", func(r chi.Router) {
 			//r.Post("/", s.createUserHandler)
 			r.Route("/{userID}", func(r chi.Router) {
+				r.Use(s.userContextMiddleware)
 				r.Get("/", s.getUserHandler)
+				r.Put("/follow", s.followUserHandler)
 			})
 		})
 	})
