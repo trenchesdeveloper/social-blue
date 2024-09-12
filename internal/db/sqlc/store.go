@@ -1,6 +1,15 @@
 package db
 
-import "database/sql"
+import (
+	"database/sql"
+	"errors"
+)
+
+var (
+	ErrNotFound          = errors.New("not found")
+	ErrorUniqueViolation = errors.New("unique_violation")
+	ErrConflict          = errors.New("resource already exists")
+)
 
 type Store interface {
 	Querier

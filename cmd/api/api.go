@@ -47,6 +47,7 @@ func (s *server) mount() http.Handler {
 				r.Use(s.userContextMiddleware)
 				r.Get("/", s.getUserHandler)
 				r.Put("/follow", s.followUserHandler)
+				r.Put("/unfollow", s.unfollowUserHandler)
 			})
 		})
 	})

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/go-chi/chi/v5"
+	"github.com/lib/pq"
 	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
 	"log"
 	"net/http"
@@ -46,6 +47,39 @@ func (s *server) followUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	// follow the user
 	err = s.store.FollowUser(r.Context(), db.FollowUserParams{
+		UserID:     payload.UserID,
+		FollowerID: followerUser.ID,
+	})
+
+	if err != nil {
+		log.Println(err)
+		if pqError, ok := err.(*pq.Error); ok && pqError.Code == "23505" {
+			s.badRequestError(w, r, errors.New("user already followed"))
+			return
+		}
+		s.internalServerError(w, r, err)
+		return
+	}
+
+	// return the user
+	jsonRespose(w, http.StatusOK, followerUser)
+}
+
+func (s *server) unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
+	// get the user from the context
+	followerUser, err := s.getUserFromContext(r.Context())
+	if err != nil {
+		s.internalServerError(w, r, err)
+		return
+	}
+	var payload FollowUser
+	if err = readJSON(w, r, &payload); err != nil {
+		s.badRequestError(w, r, err)
+		return
+	}
+
+	// follow the user
+	err = s.store.UnFollowUser(r.Context(), db.UnFollowUserParams{
 		UserID:     payload.UserID,
 		FollowerID: followerUser.ID,
 	})
