@@ -18,6 +18,7 @@ type Querier interface {
 	GetPostByID(ctx context.Context, id int64) (GetPostByIDRow, error)
 	GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error)
 	GetUserByUsername(ctx context.Context, username string) (GetUserByUsernameRow, error)
+	GetUserFeed(ctx context.Context, arg GetUserFeedParams) ([]GetUserFeedRow, error)
 	ListPosts(ctx context.Context) ([]ListPostsRow, error)
 	ListUsers(ctx context.Context) ([]ListUsersRow, error)
 	UnFollowUser(ctx context.Context, arg UnFollowUserParams) error

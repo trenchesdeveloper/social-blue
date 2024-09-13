@@ -17,6 +17,11 @@ type UpdatePostDto struct {
 	Tags    []string `json:"tags" validate:"omitempty"`
 }
 
+type PostWithMetadata struct {
+	GetPostWithCommentsDto
+	CommentsCount int64 `json:"comments_count"`
+}
+
 type GetPostWithCommentsDto struct {
 	ID        int64                       `json:"id"`
 	Content   string                      `json:"content"`
@@ -26,4 +31,5 @@ type GetPostWithCommentsDto struct {
 	CreatedAt time.Time                   `json:"created_at"`
 	UpdatedAt time.Time                   `json:"updated_at"`
 	Comments  []db.GetCommentsByPostIDRow `json:"comments"`
+	User      db.User                     `json:"user"`
 }

@@ -27,3 +27,17 @@ SET
 -- name: DeletePost :exec
 DELETE FROM posts
 WHERE id = $1;
+
+
+-- name: GetUserFeed :many
+SELECT p.id, p.content, p.title, p.user_id, p.tags, p.version, p.created_at, p.updated_at, u.username,
+       COUNT(c.id) AS comments_count
+FROM posts p
+         LEFT JOIN comments c ON c.post_id = p.id
+         LEFT JOIN users u ON p.user_id = u.id
+         JOIN followers f ON f.follower_id = p.user_id OR p.user_id = $1
+WHERE f.user_id = $1 OR p.user_id = $1
+GROUP BY p.id, u.username
+ORDER BY p.created_at DESC
+LIMIT $2
+OFFSET $3;

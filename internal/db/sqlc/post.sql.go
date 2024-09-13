@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/lib/pq"
@@ -98,6 +99,73 @@ func (q *Queries) GetPostByID(ctx context.Context, id int64) (GetPostByIDRow, er
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getUserFeed = `-- name: GetUserFeed :many
+SELECT p.id, p.content, p.title, p.user_id, p.tags, p.version, p.created_at, p.updated_at, u.username,
+       COUNT(c.id) AS comments_count
+FROM posts p
+         LEFT JOIN comments c ON c.post_id = p.id
+         LEFT JOIN users u ON p.user_id = u.id
+         JOIN followers f ON f.follower_id = p.user_id OR p.user_id = $1
+WHERE f.user_id = $1 OR p.user_id = $1
+GROUP BY p.id, u.username
+ORDER BY p.created_at DESC
+LIMIT $2
+OFFSET $3
+`
+
+type GetUserFeedParams struct {
+	UserID int64 `json:"user_id"`
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+type GetUserFeedRow struct {
+	ID            int64          `json:"id"`
+	Content       string         `json:"content"`
+	Title         string         `json:"title"`
+	UserID        int64          `json:"user_id"`
+	Tags          []string       `json:"tags"`
+	Version       int64          `json:"version"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+	Username      sql.NullString `json:"username"`
+	CommentsCount int64          `json:"comments_count"`
+}
+
+func (q *Queries) GetUserFeed(ctx context.Context, arg GetUserFeedParams) ([]GetUserFeedRow, error) {
+	rows, err := q.db.QueryContext(ctx, getUserFeed, arg.UserID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetUserFeedRow{}
+	for rows.Next() {
+		var i GetUserFeedRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Content,
+			&i.Title,
+			&i.UserID,
+			pq.Array(&i.Tags),
+			&i.Version,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Username,
+			&i.CommentsCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listPosts = `-- name: ListPosts :many

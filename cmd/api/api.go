@@ -49,6 +49,10 @@ func (s *server) mount() http.Handler {
 				r.Put("/follow", s.followUserHandler)
 				r.Put("/unfollow", s.unfollowUserHandler)
 			})
+
+			r.Group(func(r chi.Router) {
+				r.Get("/feed", s.GetUserFeedsHandler)
+			})
 		})
 	})
 
