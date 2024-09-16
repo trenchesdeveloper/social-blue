@@ -108,7 +108,9 @@ FROM posts p
          LEFT JOIN comments c ON c.post_id = p.id
          LEFT JOIN users u ON p.user_id = u.id
          JOIN followers f ON f.follower_id = p.user_id OR p.user_id = $1
-WHERE f.user_id = $1 OR p.user_id = $1
+WHERE f.user_id = $1 AND
+    (p.title ILIKE '%' || $4 || '%' OR p.content ILIKE '%' || $4 || '%') AND
+    (p.tags @> $5 OR $5 = '{}')
 GROUP BY p.id, u.username
 ORDER BY p.created_at DESC
 LIMIT $2
@@ -116,9 +118,11 @@ OFFSET $3
 `
 
 type GetUserFeedParams struct {
-	UserID int64 `json:"user_id"`
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	UserID  int64          `json:"user_id"`
+	Limit   int32          `json:"limit"`
+	Offset  int32          `json:"offset"`
+	Column4 sql.NullString `json:"column_4"`
+	Tags    []string       `json:"tags"`
 }
 
 type GetUserFeedRow struct {
@@ -135,7 +139,13 @@ type GetUserFeedRow struct {
 }
 
 func (q *Queries) GetUserFeed(ctx context.Context, arg GetUserFeedParams) ([]GetUserFeedRow, error) {
-	rows, err := q.db.QueryContext(ctx, getUserFeed, arg.UserID, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getUserFeed,
+		arg.UserID,
+		arg.Limit,
+		arg.Offset,
+		arg.Column4,
+		pq.Array(arg.Tags),
+	)
 	if err != nil {
 		return nil, err
 	}

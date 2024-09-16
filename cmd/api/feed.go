@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
 	"github.com/trenchesdeveloper/social-blue/internal/dto"
 	"net/http"
@@ -37,6 +38,11 @@ func (s *server) GetUserFeedsHandler(w http.ResponseWriter, r *http.Request) {
 		Limit:  int32(fq.Limit),
 		Offset: int32(fq.Offset),
 		UserID: 1,
+		Column4: sql.NullString{
+			String: fq.Search,
+			Valid:  fq.Search != "",
+		},
+		Tags: fq.Tags,
 	})
 	if err != nil {
 		s.internalServerError(w, r, err)
