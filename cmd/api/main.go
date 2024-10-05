@@ -11,6 +11,21 @@ import (
 
 const version = "0.0.1"
 
+//	@title			Social Blue API
+//	@description	This is a social media API
+//	@termsOfService	http://swagger.io/terms/
+
+//	@contact.name	API Support
+//	@contact.url	http://www.swagger.io/support
+//	@contact.email	support@swagger.io
+
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+
+//	@BasePath					/v1
+//	@securityDefinitions.apikey	ApiKeyAuth
+//	@in							header
+//	@name						Authorization
 func main() {
 	cfg, err := config.LoadConfig(".")
 

@@ -1,15 +1,18 @@
 package main
 
 import (
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	_ "github.com/lib/pq"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"github.com/trenchesdeveloper/social-blue/config"
+
+	"github.com/trenchesdeveloper/social-blue/docs" //This is required for swaggo to find your docs
 	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
 	"log"
 	"net/http"
 	"time"
-
-	_ "github.com/lib/pq"
 )
 
 type server struct {
@@ -27,6 +30,10 @@ func (s *server) mount() http.Handler {
 	r.Use(middleware.Timeout(60 * time.Second))
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/health", s.healthCheckHandler)
+		docsURL := fmt.Sprintf("%s/swagger/doc.json", s.config.ServerPort)
+		r.Get("/swagger/*", httpSwagger.Handler(
+			httpSwagger.URL(docsURL), //The url pointing to API definition
+		))
 
 		r.Route("/posts", func(r chi.Router) {
 			r.Post("/", s.createPostHandler)
@@ -60,6 +67,13 @@ func (s *server) mount() http.Handler {
 }
 
 func (s *server) start(mux http.Handler) error {
+	//Docs
+
+	docs.SwaggerInfo.Title = "Social Blue API"
+	docs.SwaggerInfo.Description = "This is a social media API"
+	docs.SwaggerInfo.Version = "0.0.1"
+	docs.SwaggerInfo.Host = s.config.ApiUrl
+
 	srv := &http.Server{
 		Addr:         s.config.ServerPort,
 		Handler:      mux,

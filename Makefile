@@ -24,5 +24,9 @@ migratedown:
 	migrate -path internal/db/migrations -database "postgresql://root:secret@localhost:5435/social?sslmode=disable" -verbose down
 	#migrate -path db/migrations -database "postgresql://root:secret@localhost:5434/social?sslmode=disable" -verbose down
 
+gen-docs:
+	swag init -g ./api/main.go -d cmd,internal && swag fmt
+
+
 sqlc:
 	sqlc generate
