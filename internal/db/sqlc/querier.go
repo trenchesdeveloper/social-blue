@@ -11,19 +11,24 @@ import (
 type Querier interface {
 	CreatePost(ctx context.Context, arg CreatePostParams) (CreatePostRow, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
+	CreateUserInvitation(ctx context.Context, arg CreateUserInvitationParams) (UserInvitation, error)
 	DeletePost(ctx context.Context, id int64) error
 	DeleteUser(ctx context.Context, id int64) error
+	DeleteUserInvitation(ctx context.Context, token []byte) error
 	FollowUser(ctx context.Context, arg FollowUserParams) error
 	GetCommentsByPostID(ctx context.Context, postID int64) ([]GetCommentsByPostIDRow, error)
 	GetPostByID(ctx context.Context, id int64) (GetPostByIDRow, error)
 	GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error)
 	GetUserByUsername(ctx context.Context, username string) (GetUserByUsernameRow, error)
 	GetUserFeed(ctx context.Context, arg GetUserFeedParams) ([]GetUserFeedRow, error)
+	GetUserInvitationByToken(ctx context.Context, token []byte) (UserInvitation, error)
 	ListPosts(ctx context.Context) ([]ListPostsRow, error)
+	ListUserInvitations(ctx context.Context, userID int64) ([]UserInvitation, error)
 	ListUsers(ctx context.Context) ([]ListUsersRow, error)
 	UnFollowUser(ctx context.Context, arg UnFollowUserParams) error
 	UpdatePost(ctx context.Context, arg UpdatePostParams) (UpdatePostRow, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error)
+	UpdateUserInvitationUserID(ctx context.Context, arg UpdateUserInvitationUserIDParams) error
 }
 
 var _ Querier = (*Queries)(nil)

@@ -61,6 +61,12 @@ func (s *server) mount() http.Handler {
 			r.Group(func(r chi.Router) {
 				r.Get("/feed", s.GetUserFeedsHandler)
 			})
+
+			// Public routes
+			r.Route("/auth", func(r chi.Router) {
+				//r.Post("/login", s.loginHandler)
+				r.Post("/register", s.registerUserHandler)
+			})
 		})
 	})
 	return r
