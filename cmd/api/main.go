@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"github.com/trenchesdeveloper/social-blue/config"
 	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
+	"go.uber.org/zap"
 	"log"
 	"time"
 )
@@ -22,10 +23,10 @@ const version = "0.0.1"
 //	@license.name	Apache 2.0
 //	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 
-//	@BasePath					/v1
-//	@securityDefinitions.apikey	ApiKeyAuth
-//	@in							header
-//	@name						Authorization
+// @BasePath					/v1
+// @securityDefinitions.apikey	ApiKeyAuth
+// @in							header
+// @name						Authorization
 func main() {
 	cfg, err := config.LoadConfig(".")
 
@@ -35,6 +36,17 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
+	// logger
+	logger := zap.Must(zap.NewProduction()).Sugar()
+	defer logger.Sync()
+
+	app := &server{
+		config: cfg,
+		logger: logger,
+	}
+
+	// connect to the database
 	conn, err := sql.Open(cfg.DBdriver, cfg.DBSource)
 	if err != nil {
 		log.Fatal(err)
@@ -43,19 +55,17 @@ func main() {
 	conn.SetMaxIdleConns(30)
 	err = conn.PingContext(ctx)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 	defer conn.Close()
-	log.Println("Database connection established")
+	logger.Info("database connected")
 	storage := db.NewStore(conn)
 
-	app := &server{
-		config: cfg,
-		store:  storage,
-	}
+	app.store = storage
+
 	mux := app.mount()
 	if err := app.start(mux); err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 }

@@ -7,10 +7,10 @@ import (
 	_ "github.com/lib/pq"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"github.com/trenchesdeveloper/social-blue/config"
+	"go.uber.org/zap"
 
 	"github.com/trenchesdeveloper/social-blue/docs" //This is required for swaggo to find your docs
 	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
-	"log"
 	"net/http"
 	"time"
 )
@@ -18,6 +18,7 @@ import (
 type server struct {
 	config *config.AppConfig
 	store  db.Store
+	logger *zap.SugaredLogger
 }
 
 func (s *server) mount() http.Handler {
@@ -62,7 +63,6 @@ func (s *server) mount() http.Handler {
 			})
 		})
 	})
-
 	return r
 }
 
@@ -82,6 +82,6 @@ func (s *server) start(mux http.Handler) error {
 		IdleTimeout:  time.Minute,
 	}
 
-	log.Printf("Server starting on %s", s.config.ServerPort)
+	s.logger.Infow("Starting server", "port", s.config.ServerPort, "env", s.config.Environment)
 	return srv.ListenAndServe()
 }

@@ -16,6 +16,16 @@ type postContextKey string
 
 const postKey postContextKey = "post"
 
+// CreatePost godoc
+//	@Summary		Create a post
+//	@Description	Create a post
+//	@ID				create-post
+//	@Accept			json
+//	@Produce		json
+//	@Param			input	body		dto.CreatPostDto	true	"Post data"
+//	@Success		200		{object}	db.CreatePostParams
+//	@Failure		400		{object}	error
+//	@Failure		500		{object}	error
 func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
 	var input dto.CreatPostDto
 	if err := readJSON(w, r, &input); err != nil {

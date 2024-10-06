@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 )
 
@@ -10,16 +9,16 @@ const (
 )
 
 func (s *server) internalServerError(w http.ResponseWriter, r *http.Request, err error) {
-	log.Printf("Internal server error: %s path=%s: error: %s", r.Method, r.URL.Path, err)
+	s.logger.Errorw("Internal server error", "method", r.Method, "path", r.URL.Path, "error", err.Error())
 	writeJSONError(w, http.StatusInternalServerError, "Something went wrong")
 }
 
 func (s *server) notFoundError(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Not found: %s path=%s", r.Method, r.URL.Path)
+	s.logger.Warnf("Not found: %s %s", r.Method, r.URL.Path)
 	writeJSONError(w, http.StatusNotFound, "Not found")
 }
 
 func (s *server) badRequestError(w http.ResponseWriter, r *http.Request, err error) {
-	log.Printf("Bad request: %s path=%s: error: %s", r.Method, r.URL.Path, err)
+	s.logger.Warnf("Bad request: %s %s", r.Method, r.URL.Path)
 	writeJSONError(w, http.StatusBadRequest, err.Error())
 }
