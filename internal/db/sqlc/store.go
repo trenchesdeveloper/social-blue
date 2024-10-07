@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 )
@@ -13,6 +14,7 @@ var (
 
 type Store interface {
 	Querier
+	CreateAndInviteUser(ctx context.Context, token string, arg CreateUserParams) (CreateUserRow, error)
 }
 
 type SQLStore struct {
@@ -25,4 +27,32 @@ func NewStore(db *sql.DB) Store {
 		connPool: db,
 		Queries:  New(db),
 	}
+}
+
+func (s *SQLStore) CreateAndInviteUser(ctx context.Context, token string, arg CreateUserParams) (CreateUserRow, error) {
+	tx, err := s.connPool.BeginTx(ctx, nil)
+	if err != nil {
+		return CreateUserRow{}, err
+	}
+
+	defer tx.Rollback()
+
+	user, err := s.CreateUser(ctx, arg)
+	if err != nil {
+		return CreateUserRow{}, err
+	}
+
+	_, err = s.CreateUserInvitation(ctx, CreateUserInvitationParams{
+		Token:  []byte(token),
+		UserID: user.ID,
+	})
+	if err != nil {
+		return CreateUserRow{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return CreateUserRow{}, err
+	}
+
+	return user, nil
 }

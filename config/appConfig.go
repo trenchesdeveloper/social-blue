@@ -16,25 +16,27 @@ type AppConfig struct {
 }
 
 func LoadConfig(path string) (*AppConfig, error) {
-	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
-	viper.SetConfigType("env")
+	// Check if environment is set to production
+	if viper.GetString("ENVIRONMENT") != "production" {
+		viper.AddConfigPath(path)
+		viper.SetConfigName("app")
+		viper.SetConfigType("env")
 
-	viper.AutomaticEnv()
-	err := viper.ReadInConfig()
-
-	if err != nil {
-		return nil, err
+		err := viper.ReadInConfig()
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	var config AppConfig
+	// Always load environment variables from the environment
+	viper.AutomaticEnv()
 
-	err = viper.Unmarshal(&config)
+	var config AppConfig
+	err := viper.Unmarshal(&config)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return &config, nil
-
 }

@@ -8,6 +8,7 @@ import (
 )
 
 func (s *server) registerUserHandler(w http.ResponseWriter, r *http.Request) {
+
 	var input dto.RegisterUserDto
 	if err := readJSON(w, r, &input); err != nil {
 		s.badRequestError(w, r, err)
@@ -26,8 +27,7 @@ func (s *server) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 		s.internalServerError(w, r, err)
 		return
 	}
-
-	user, err := s.store.CreateUser(r.Context(), db.CreateUserParams{
+	user, err := s.store.CreateAndInviteUser(r.Context(), "token", db.CreateUserParams{
 		FirstName: input.FirstName,
 		LastName:  input.LastName,
 		Username:  input.Username,
@@ -39,6 +39,8 @@ func (s *server) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 		s.internalServerError(w, r, err)
 		return
 	}
+
+	// send email to user
 
 	jsonRespose(w, http.StatusOK, user)
 }
