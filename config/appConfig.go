@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/spf13/viper"
+	"time"
 )
 
 type AppConfig struct {
@@ -13,6 +14,10 @@ type AppConfig struct {
 	DBdriver     string `mapstructure:"DB_DRIVER"`
 	Environment  string `mapstructure:"ENVIRONMENT"`
 	ApiUrl       string `mapstructure:"API_URL"`
+}
+
+type MailConfig struct {
+	EXP time.Duration
 }
 
 func LoadConfig(path string) (*AppConfig, error) {

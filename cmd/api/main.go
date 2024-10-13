@@ -63,6 +63,13 @@ func main() {
 
 	app.store = storage
 
+	// add mail configuration
+	mail := config.MailConfig{
+		EXP: time.Hour * 24 * 3, // 3 days
+	}
+
+	app.mailConfig = mail
+
 	mux := app.mount()
 	if err := app.start(mux); err != nil {
 		logger.Fatal(err)

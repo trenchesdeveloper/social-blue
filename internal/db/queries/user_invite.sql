@@ -1,17 +1,17 @@
 -- name: CreateUserInvitation :one
-INSERT INTO user_invitations (token, user_id)
-VALUES ($1, $2)
-RETURNING token, user_id;
+INSERT INTO user_invitations (token, user_id, expiry)
+VALUES ($1, $2, $3)
+RETURNING token, user_id, expiry;
 
 
 -- name: GetUserInvitationByToken :one
-SELECT token, user_id
+SELECT token, user_id, expiry
 FROM user_invitations
 WHERE token = $1;
 
 
 -- name: ListUserInvitations :many
-SELECT token, user_id
+SELECT token, user_id, expiry
 FROM user_invitations
 WHERE user_id = $1;
 

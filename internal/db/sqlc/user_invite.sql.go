@@ -7,23 +7,25 @@ package db
 
 import (
 	"context"
+	"time"
 )
 
 const createUserInvitation = `-- name: CreateUserInvitation :one
-INSERT INTO user_invitations (token, user_id)
-VALUES ($1, $2)
-RETURNING token, user_id
+INSERT INTO user_invitations (token, user_id, expiry)
+VALUES ($1, $2, $3)
+RETURNING token, user_id, expiry
 `
 
 type CreateUserInvitationParams struct {
-	Token  []byte `json:"token"`
-	UserID int64  `json:"user_id"`
+	Token  []byte    `json:"token"`
+	UserID int64     `json:"user_id"`
+	Expiry time.Time `json:"expiry"`
 }
 
 func (q *Queries) CreateUserInvitation(ctx context.Context, arg CreateUserInvitationParams) (UserInvitation, error) {
-	row := q.db.QueryRowContext(ctx, createUserInvitation, arg.Token, arg.UserID)
+	row := q.db.QueryRowContext(ctx, createUserInvitation, arg.Token, arg.UserID, arg.Expiry)
 	var i UserInvitation
-	err := row.Scan(&i.Token, &i.UserID)
+	err := row.Scan(&i.Token, &i.UserID, &i.Expiry)
 	return i, err
 }
 
@@ -38,7 +40,7 @@ func (q *Queries) DeleteUserInvitation(ctx context.Context, token []byte) error 
 }
 
 const getUserInvitationByToken = `-- name: GetUserInvitationByToken :one
-SELECT token, user_id
+SELECT token, user_id, expiry
 FROM user_invitations
 WHERE token = $1
 `
@@ -46,12 +48,12 @@ WHERE token = $1
 func (q *Queries) GetUserInvitationByToken(ctx context.Context, token []byte) (UserInvitation, error) {
 	row := q.db.QueryRowContext(ctx, getUserInvitationByToken, token)
 	var i UserInvitation
-	err := row.Scan(&i.Token, &i.UserID)
+	err := row.Scan(&i.Token, &i.UserID, &i.Expiry)
 	return i, err
 }
 
 const listUserInvitations = `-- name: ListUserInvitations :many
-SELECT token, user_id
+SELECT token, user_id, expiry
 FROM user_invitations
 WHERE user_id = $1
 `
@@ -65,7 +67,7 @@ func (q *Queries) ListUserInvitations(ctx context.Context, userID int64) ([]User
 	items := []UserInvitation{}
 	for rows.Next() {
 		var i UserInvitation
-		if err := rows.Scan(&i.Token, &i.UserID); err != nil {
+		if err := rows.Scan(&i.Token, &i.UserID, &i.Expiry); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

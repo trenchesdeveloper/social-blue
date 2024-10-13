@@ -4,17 +4,20 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 )
 
 var (
 	ErrNotFound          = errors.New("not found")
 	ErrorUniqueViolation = errors.New("unique_violation")
 	ErrConflict          = errors.New("resource already exists")
+	ErrDuplicateEmail    = errors.New("email already exists")
+	ErrDuplicateUsername = errors.New("username already exists")
 )
 
 type Store interface {
 	Querier
-	CreateAndInviteUser(ctx context.Context, token string, arg CreateUserParams) (CreateUserRow, error)
+	CreateAndInviteUser(ctx context.Context, token string, exp time.Duration, arg CreateUserParams) (CreateUserRow, error)
 }
 
 type SQLStore struct {
@@ -29,7 +32,7 @@ func NewStore(db *sql.DB) Store {
 	}
 }
 
-func (s *SQLStore) CreateAndInviteUser(ctx context.Context, token string, arg CreateUserParams) (CreateUserRow, error) {
+func (s *SQLStore) CreateAndInviteUser(ctx context.Context, token string, exp time.Duration, arg CreateUserParams) (CreateUserRow, error) {
 	tx, err := s.connPool.BeginTx(ctx, nil)
 	if err != nil {
 		return CreateUserRow{}, err
@@ -45,6 +48,7 @@ func (s *SQLStore) CreateAndInviteUser(ctx context.Context, token string, arg Cr
 	_, err = s.CreateUserInvitation(ctx, CreateUserInvitationParams{
 		Token:  []byte(token),
 		UserID: user.ID,
+		Expiry: time.Now().Add(exp),
 	})
 	if err != nil {
 		return CreateUserRow{}, err

@@ -16,9 +16,10 @@ import (
 )
 
 type server struct {
-	config *config.AppConfig
-	store  db.Store
-	logger *zap.SugaredLogger
+	config     *config.AppConfig
+	store      db.Store
+	logger     *zap.SugaredLogger
+	mailConfig config.MailConfig
 }
 
 func (s *server) mount() http.Handler {

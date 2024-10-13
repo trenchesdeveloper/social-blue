@@ -1,6 +1,9 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"github.com/google/uuid"
 	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
 	"github.com/trenchesdeveloper/social-blue/internal/dto"
 	"golang.org/x/crypto/bcrypt"
@@ -27,7 +30,14 @@ func (s *server) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 		s.internalServerError(w, r, err)
 		return
 	}
-	user, err := s.store.CreateAndInviteUser(r.Context(), "token", db.CreateUserParams{
+
+	// create a plain token
+	plainToken := uuid.New().String()
+
+	hash := sha256.Sum256([]byte(plainToken))
+	hashToken := hex.EncodeToString(hash[:])
+
+	user, err := s.store.CreateAndInviteUser(r.Context(), hashToken, s.mailConfig.EXP, db.CreateUserParams{
 		FirstName: input.FirstName,
 		LastName:  input.LastName,
 		Username:  input.Username,
@@ -36,8 +46,18 @@ func (s *server) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		s.internalServerError(w, r, err)
-		return
+		switch {
+		case err.Error() == `pq: duplicate key value violates unique constraint "users_username_key"`:
+			s.badRequestError(w, r, db.ErrDuplicateUsername)
+			return
+		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
+			s.badRequestError(w, r, db.ErrDuplicateEmail)
+			return
+
+		default:
+			s.internalServerError(w, r, err)
+			return
+		}
 	}
 
 	// send email to user
