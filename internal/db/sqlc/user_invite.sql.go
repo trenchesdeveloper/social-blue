@@ -31,11 +31,11 @@ func (q *Queries) CreateUserInvitation(ctx context.Context, arg CreateUserInvita
 
 const deleteUserInvitation = `-- name: DeleteUserInvitation :exec
 DELETE FROM user_invitations
-WHERE token = $1
+WHERE user_id = $1
 `
 
-func (q *Queries) DeleteUserInvitation(ctx context.Context, token []byte) error {
-	_, err := q.db.ExecContext(ctx, deleteUserInvitation, token)
+func (q *Queries) DeleteUserInvitation(ctx context.Context, userID int64) error {
+	_, err := q.db.ExecContext(ctx, deleteUserInvitation, userID)
 	return err
 }
 

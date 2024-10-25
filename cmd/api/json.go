@@ -36,10 +36,21 @@ func writeJSONError(w http.ResponseWriter, status int, message string) error {
 
 }
 
-func jsonRespose(w http.ResponseWriter, status int, data any) error {
+func jsonResponse(w http.ResponseWriter, status int, data any, msg ...string) error {
 	type response struct {
-		Data any `json:"data"`
+		Data    any    `json:"data,omitempty"`
+		Message string `json:"message,omitempty"`
 	}
 
-	return writeJSON(w, status, response{Data: data})
+	var message string
+	if len(msg) > 0 {
+		message = msg[0]
+	}
+
+	var responseData any
+	if data != nil {
+		responseData = data
+	}
+
+	return writeJSON(w, status, response{Data: responseData, Message: message})
 }

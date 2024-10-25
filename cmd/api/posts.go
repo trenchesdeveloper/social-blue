@@ -17,6 +17,7 @@ type postContextKey string
 const postKey postContextKey = "post"
 
 // CreatePost godoc
+//
 //	@Summary		Create a post
 //	@Description	Create a post
 //	@ID				create-post
@@ -50,7 +51,7 @@ func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonRespose(w, http.StatusOK, post)
+	jsonResponse(w, http.StatusOK, post)
 
 }
 
@@ -80,7 +81,7 @@ func (s *server) getPostHandler(w http.ResponseWriter, r *http.Request) {
 		Comments:  comments,
 	}
 
-	jsonRespose(w, http.StatusOK, postWithComments)
+	jsonResponse(w, http.StatusOK, postWithComments)
 
 }
 
@@ -122,7 +123,7 @@ func (s *server) updatePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonRespose(w, http.StatusOK, UpdatedPost)
+	jsonResponse(w, http.StatusOK, UpdatedPost)
 }
 
 func (s *server) deletePostHandler(w http.ResponseWriter, r *http.Request) {

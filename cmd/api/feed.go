@@ -68,5 +68,5 @@ func (s *server) GetUserFeedsHandler(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	jsonRespose(w, http.StatusOK, postWithMedata)
+	jsonResponse(w, http.StatusOK, postWithMedata)
 }

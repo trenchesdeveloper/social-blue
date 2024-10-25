@@ -51,7 +51,6 @@ func (s *server) mount() http.Handler {
 		})
 
 		r.Route("/users", func(r chi.Router) {
-			//r.Post("/", s.createUserHandler)
 			r.Route("/{userID}", func(r chi.Router) {
 				r.Use(s.userContextMiddleware)
 				r.Get("/", s.getUserHandler)
@@ -63,11 +62,12 @@ func (s *server) mount() http.Handler {
 				r.Get("/feed", s.GetUserFeedsHandler)
 			})
 
-			// Public routes
-			r.Route("/auth", func(r chi.Router) {
-				//r.Post("/login", s.loginHandler)
-				r.Post("/register", s.registerUserHandler)
-			})
+		})
+
+		// Public routes
+		r.Route("/auth", func(r chi.Router) {
+			r.Put("/activate/{token}", s.activateUserHandler)
+			r.Post("/register", s.registerUserHandler)
 		})
 	})
 	return r

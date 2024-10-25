@@ -49,7 +49,7 @@ func (s *server) getUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// return the user
-	jsonRespose(w, http.StatusOK, userResponse)
+	jsonResponse(w, http.StatusOK, userResponse)
 }
 
 type FollowUser struct {
@@ -101,7 +101,7 @@ func (s *server) followUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// return the user
-	jsonRespose(w, http.StatusOK, followerUser)
+	jsonResponse(w, http.StatusOK, followerUser)
 }
 
 func (s *server) unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -131,7 +131,7 @@ func (s *server) unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// return the user
-	jsonRespose(w, http.StatusOK, followerUser)
+	jsonResponse(w, http.StatusOK, followerUser)
 }
 
 func (s *server) userContextMiddleware(next http.Handler) http.Handler {

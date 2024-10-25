@@ -66,7 +66,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, first_name, last_name, username, email, password, created_at, updated_at
+SELECT id, first_name, last_name, username, email, password, created_at, updated_at, is_active
 FROM users
 WHERE id = $1
 `
@@ -80,6 +80,7 @@ type GetUserByIDRow struct {
 	Password  []byte    `json:"password"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	IsActive  bool      `json:"is_active"`
 }
 
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error) {
@@ -94,12 +95,13 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, er
 		&i.Password,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.IsActive,
 	)
 	return i, err
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, username, password, email, created_at, updated_at
+SELECT id, username, password, email, created_at, updated_at, is_active
 FROM users
 WHERE username = $1
 `
@@ -111,6 +113,7 @@ type GetUserByUsernameRow struct {
 	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	IsActive  bool      `json:"is_active"`
 }
 
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) (GetUserByUsernameRow, error) {
@@ -123,12 +126,48 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (GetUs
 		&i.Email,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.IsActive,
+	)
+	return i, err
+}
+
+const getUserFromInvitation = `-- name: GetUserFromInvitation :one
+SELECT u.id, u.username, u.email, u.created_at, u.updated_at, u.is_active
+FROM users u
+JOIN user_invitations ui ON u.id = ui.user_id
+WHERE ui.token = $1 AND ui.expiry > $2
+`
+
+type GetUserFromInvitationParams struct {
+	Token  []byte    `json:"token"`
+	Expiry time.Time `json:"expiry"`
+}
+
+type GetUserFromInvitationRow struct {
+	ID        int64     `json:"id"`
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	IsActive  bool      `json:"is_active"`
+}
+
+func (q *Queries) GetUserFromInvitation(ctx context.Context, arg GetUserFromInvitationParams) (GetUserFromInvitationRow, error) {
+	row := q.db.QueryRowContext(ctx, getUserFromInvitation, arg.Token, arg.Expiry)
+	var i GetUserFromInvitationRow
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.IsActive,
 	)
 	return i, err
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, username, email, created_at, updated_at
+SELECT id, username, email, created_at, updated_at, is_active
 FROM users
 ORDER BY created_at DESC
 `
@@ -139,6 +178,7 @@ type ListUsersRow struct {
 	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	IsActive  bool      `json:"is_active"`
 }
 
 func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
@@ -156,6 +196,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
 			&i.Email,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.IsActive,
 		); err != nil {
 			return nil, err
 		}
@@ -174,7 +215,7 @@ const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET username = $2, email = $3, updated_at = now()
 WHERE id = $1
-RETURNING id, username, email, created_at, updated_at
+RETURNING id, username, email, created_at, updated_at, is_active
 `
 
 type UpdateUserParams struct {
@@ -189,6 +230,7 @@ type UpdateUserRow struct {
 	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	IsActive  bool      `json:"is_active"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error) {
@@ -200,6 +242,23 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateU
 		&i.Email,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.IsActive,
 	)
 	return i, err
+}
+
+const updateUserActivation = `-- name: UpdateUserActivation :exec
+UPDATE users
+SET is_active = $2
+WHERE id = $1
+`
+
+type UpdateUserActivationParams struct {
+	ID       int64 `json:"id"`
+	IsActive bool  `json:"is_active"`
+}
+
+func (q *Queries) UpdateUserActivation(ctx context.Context, arg UpdateUserActivationParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserActivation, arg.ID, arg.IsActive)
+	return err
 }

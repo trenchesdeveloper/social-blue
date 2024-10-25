@@ -23,6 +23,8 @@ definitions:
         type: string
       id:
         type: integer
+      is_active:
+        type: boolean
       last_name:
         type: string
       password:
@@ -50,6 +52,29 @@ definitions:
     - content
     - title
     type: object
+  dto.RegisterUserDto:
+    properties:
+      email:
+        type: string
+      first_name:
+        maxLength: 100
+        type: string
+      last_name:
+        maxLength: 100
+        type: string
+      password:
+        minLength: 6
+        type: string
+      username:
+        maxLength: 100
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    - username
+    type: object
   dto.UserResponseDto:
     properties:
       email:
@@ -59,6 +84,25 @@ definitions:
       id:
         type: integer
       last_name:
+        type: string
+      username:
+        type: string
+    type: object
+  main.UserWithToken:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      token:
+        type: string
+      updated_at:
         type: string
       username:
         type: string
@@ -75,6 +119,53 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Social Blue API
 paths:
+  /auth/activate/{token}:
+    put:
+      consumes:
+      - application/json
+      description: Activate a user
+      parameters:
+      - description: Activation token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+      summary: Activate a user
+      tags:
+      - users
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user
+      parameters:
+      - description: User data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterUserDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.UserWithToken'
+      summary: Register a new user
+      tags:
+      - users
   /health:
     get:
       description: Check the health status of the service

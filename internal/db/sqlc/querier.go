@@ -14,13 +14,14 @@ type Querier interface {
 	CreateUserInvitation(ctx context.Context, arg CreateUserInvitationParams) (UserInvitation, error)
 	DeletePost(ctx context.Context, id int64) error
 	DeleteUser(ctx context.Context, id int64) error
-	DeleteUserInvitation(ctx context.Context, token []byte) error
+	DeleteUserInvitation(ctx context.Context, userID int64) error
 	FollowUser(ctx context.Context, arg FollowUserParams) error
 	GetCommentsByPostID(ctx context.Context, postID int64) ([]GetCommentsByPostIDRow, error)
 	GetPostByID(ctx context.Context, id int64) (GetPostByIDRow, error)
 	GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error)
 	GetUserByUsername(ctx context.Context, username string) (GetUserByUsernameRow, error)
 	GetUserFeed(ctx context.Context, arg GetUserFeedParams) ([]GetUserFeedRow, error)
+	GetUserFromInvitation(ctx context.Context, arg GetUserFromInvitationParams) (GetUserFromInvitationRow, error)
 	GetUserInvitationByToken(ctx context.Context, token []byte) (UserInvitation, error)
 	ListPosts(ctx context.Context) ([]ListPostsRow, error)
 	ListUserInvitations(ctx context.Context, userID int64) ([]UserInvitation, error)
@@ -28,6 +29,7 @@ type Querier interface {
 	UnFollowUser(ctx context.Context, arg UnFollowUserParams) error
 	UpdatePost(ctx context.Context, arg UpdatePostParams) (UpdatePostRow, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error)
+	UpdateUserActivation(ctx context.Context, arg UpdateUserActivationParams) error
 	UpdateUserInvitationUserID(ctx context.Context, arg UpdateUserInvitationUserIDParams) error
 }
 

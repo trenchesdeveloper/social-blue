@@ -18,10 +18,11 @@ WHERE user_id = $1;
 
 -- name: DeleteUserInvitation :exec
 DELETE FROM user_invitations
-WHERE token = $1;
+WHERE user_id = $1;
 
 
 -- name: UpdateUserInvitationUserID :exec
 UPDATE user_invitations
 SET user_id = $2
 WHERE token = $1;
+

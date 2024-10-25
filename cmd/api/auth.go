@@ -2,7 +2,10 @@ package main
 
 import (
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
+	"errors"
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
 	"github.com/trenchesdeveloper/social-blue/internal/dto"
@@ -10,6 +13,19 @@ import (
 	"net/http"
 )
 
+type UserWithToken struct {
+	db.CreateUserRow
+	Token string `json:"token"`
+}
+
+// @Summary		Register a new user
+// @Description	Register a new user
+// @Tags			users
+// @Accept			json
+// @Produce		json
+// @Param			input	body		dto.RegisterUserDto	true	"User data"
+// @Success		200		{object}	UserWithToken
+// @Router			/auth/register [post]
 func (s *server) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	var input dto.RegisterUserDto
@@ -19,7 +35,7 @@ func (s *server) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := Validate.Struct(input); err != nil {
-		s.badRequestError(w, r, err)
+		writeJSONError(w, http.StatusBadRequest, "Validation failed: "+err.Error())
 		return
 	}
 
@@ -61,6 +77,58 @@ func (s *server) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// send email to user
+	userWithToken := UserWithToken{
+		CreateUserRow: user,
+		Token:         plainToken,
+	}
 
-	jsonRespose(w, http.StatusOK, user)
+	jsonResponse(w, http.StatusCreated, userWithToken)
+}
+
+// @Summary		Activate a user
+// @Description	Activate a user
+// @Tags			users
+// @Accept			json
+// @Produce		json
+// @Param			token	path		string	true	"Activation token"
+// @Success		200		{object}	nil
+// @Failure		400		{object}	error
+// @Failure		404		{object}	error
+// @Router			/auth/activate/{token} [put]
+func (s *server) activateUserHandler(w http.ResponseWriter, r *http.Request) {
+	// get the token from the request
+	token := chi.URLParam(r, "token")
+
+	s.logger.Info("Token: ", token)
+
+	// check if the token is empty
+	if token == "" {
+		s.badRequestError(w, r, db.ErrInvalidToken)
+		return
+	}
+
+	// hash the token
+	hash := sha256.Sum256([]byte(token))
+	hashToken := hex.EncodeToString(hash[:])
+
+	// get the user by the token
+	_, err := s.store.ActivateUser(r.Context(), hashToken)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, db.ErrInvalidToken):
+			s.badRequestError(w, r, err)
+			return
+		case errors.Is(err, sql.ErrNoRows):
+			s.notFoundError(w, r)
+			return
+		default:
+			s.internalServerError(w, r, err)
+			return
+		}
+	}
+
+	// send email to user
+
+	jsonResponse(w, http.StatusOK, nil, "User activated successfully")
 }
