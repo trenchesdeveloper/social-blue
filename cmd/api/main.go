@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"database/sql"
-	"github.com/trenchesdeveloper/social-blue/config"
-	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
-	"go.uber.org/zap"
 	"log"
 	"time"
+
+	"github.com/trenchesdeveloper/social-blue/config"
+	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
+	"github.com/trenchesdeveloper/social-blue/internal/pkg/mailer"
+	"go.uber.org/zap"
 )
 
 const version = "0.0.1"
@@ -62,6 +64,10 @@ func main() {
 	storage := db.NewStore(conn)
 
 	app.store = storage
+
+	mailer := mailer.NewSendgrid(cfg.SendgridAPIKey, cfg.SendgridFromEmail)
+
+	app.mailer = mailer
 
 	// add mail configuration
 	mail := config.MailConfig{

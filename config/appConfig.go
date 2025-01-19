@@ -14,6 +14,9 @@ type AppConfig struct {
 	DBdriver     string `mapstructure:"DB_DRIVER"`
 	Environment  string `mapstructure:"ENVIRONMENT"`
 	ApiUrl       string `mapstructure:"API_URL"`
+	SendgridAPIKey string `mapstructure:"SENDGRID_API_KEY"`
+	SendgridFromEmail string `mapstructure:"SENDGRID_FROM_EMAIL"`
+	FrontendURL  string `mapstructure:"FRONTEND_URL"`
 }
 
 type MailConfig struct {
@@ -21,6 +24,22 @@ type MailConfig struct {
 }
 
 func LoadConfig(path string) (*AppConfig, error) {
+	// Always load environment variables from the environment
+	viper.AutomaticEnv()
+
+	// bind environment variables
+	viper.BindEnv("HTTP_PORT", "HTTP_PORT")
+	viper.BindEnv("DSN", "DSN")
+	viper.BindEnv("MIGRATION_URL", "MIGRATION_URL")
+	viper.BindEnv("DB_SOURCE", "DB_SOURCE")
+	viper.BindEnv("APP_SECRET, APP_SECRET")
+	viper.BindEnv("DB_DRIVER", "DB_DRIVER")
+	viper.BindEnv("ENVIRONMENT", "ENVIRONMENT")
+	viper.BindEnv("API_URL", "API_URL")
+	viper.BindEnv("SENDGRID_API_KEY", "SENDGRID_API_KEY")
+	viper.BindEnv("SENDGRID_FROM_EMAIL", "SENDGRID_FROM_EMAIL")
+	viper.BindEnv("FRONTEND_URL", "FRONTEND_URL")
+
 	// Check if environment is set to production
 	if viper.GetString("ENVIRONMENT") != "production" {
 		viper.AddConfigPath(path)
@@ -33,8 +52,7 @@ func LoadConfig(path string) (*AppConfig, error) {
 		}
 	}
 
-	// Always load environment variables from the environment
-	viper.AutomaticEnv()
+
 
 	var config AppConfig
 	err := viper.Unmarshal(&config)

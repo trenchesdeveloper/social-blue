@@ -1,0 +1,21 @@
+{{define "subject"}} Finish your registration on SocialBlue {{end}}
+{{define "body"}}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body>
+        <p>Hi {{.Username}},</p>
+        <p>Thanks for signing up to SocialBlue! We are excited to have you on board.</p>
+        <p>Before you can start using SocialBlue, you need to confirm your email address. Click the link below to complete your registration:</p>
+        <p><a href="{{.ConfirmationURL}}">{{.ConfirmationURL}}</a></p>
+        <p>If you want to activate your account manually copy and paste the code from the link above.</p>
+        <p>Thanks for joining SocialBlue!</p>
+
+        <p>Best regards,</p>
+        <p>The SocialBlue Team</p>
+    </body>
+</html>
+{{end}}

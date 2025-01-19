@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/lib/pq"
@@ -9,10 +10,12 @@ import (
 	"github.com/trenchesdeveloper/social-blue/config"
 	"go.uber.org/zap"
 
-	"github.com/trenchesdeveloper/social-blue/docs" //This is required for swaggo to find your docs
-	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
 	"net/http"
 	"time"
+
+	"github.com/trenchesdeveloper/social-blue/docs" //This is required for swaggo to find your docs
+	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
+	"github.com/trenchesdeveloper/social-blue/internal/pkg/mailer"
 )
 
 type server struct {
@@ -20,6 +23,7 @@ type server struct {
 	store      db.Store
 	logger     *zap.SugaredLogger
 	mailConfig config.MailConfig
+	mailer     mailer.Client
 }
 
 func (s *server) mount() http.Handler {

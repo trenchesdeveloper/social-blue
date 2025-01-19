@@ -20,6 +20,7 @@ type Store interface {
 	Querier
 	CreateAndInviteUser(ctx context.Context, token string, exp time.Duration, arg CreateUserParams) (CreateUserRow, error)
 	ActivateUser(ctx context.Context, token string) (GetUserFromInvitationRow, error)
+	DeleteUserAndInvitation(ctx context.Context, id int64) error
 }
 
 type SQLStore struct {
@@ -103,3 +104,33 @@ func (s *SQLStore) ActivateUser(ctx context.Context, token string) (GetUserFromI
 
 	return user, nil
 }
+
+func (s *SQLStore) DeleteUserAndInvitation(ctx context.Context, id int64) error {
+	tx, err := s.connPool.BeginTx(ctx, nil)
+
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	err = s.DeleteUser(ctx, id)
+
+	if err != nil {
+		return err
+	}
+
+	err = s.DeleteUserInvitation(ctx, id)
+
+	if err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+
+	}
+
+	return nil
+}
+

@@ -5,12 +5,14 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"errors"
+	"fmt"
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
 	"github.com/trenchesdeveloper/social-blue/internal/dto"
 	"golang.org/x/crypto/bcrypt"
-	"net/http"
 )
 
 type UserWithToken struct {
@@ -80,6 +82,31 @@ func (s *server) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	userWithToken := UserWithToken{
 		CreateUserRow: user,
 		Token:         plainToken,
+	}
+
+	confirmationUrl := fmt.Sprintf("%s/confirm/%s", s.config.FrontendURL, plainToken)
+
+	isProdEnv := s.config.Environment == "production"
+
+	vars := struct{
+		Username string
+		ConfirmationURL string
+	}{
+		Username: user.Username,
+		ConfirmationURL: confirmationUrl,
+	}
+
+	if isProdEnv {
+		err = s.mailer.Send("user_invitation.tmpl", user.Username, user.Email, vars, false)
+		if err != nil {
+			s.logger.Error("Failed to send welcome email: ", err)
+
+			//  rollback the user creation
+			err = s.store.DeleteUserAndInvitation(r.Context(), user.ID)
+			if err != nil {
+				s.logger.Error("Failed to rollback user creation: ", err)
+			}
+		}
 	}
 
 	jsonResponse(w, http.StatusCreated, userWithToken)
