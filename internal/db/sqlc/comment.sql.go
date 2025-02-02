@@ -7,7 +7,7 @@ package db
 
 import (
 	"context"
-	"database/sql"
+	"time"
 )
 
 const getCommentsByPostID = `-- name: GetCommentsByPostID :many
@@ -19,13 +19,13 @@ ORDER BY c.created_at DESC
 `
 
 type GetCommentsByPostIDRow struct {
-	ID        int64        `json:"id"`
-	PostID    int64        `json:"post_id"`
-	UserID    int64        `json:"user_id"`
-	Content   string       `json:"content"`
-	CreatedAt sql.NullTime `json:"created_at"`
-	Username  string       `json:"username"`
-	ID_2      int64        `json:"id_2"`
+	ID        int64     `json:"id"`
+	PostID    int64     `json:"post_id"`
+	UserID    int64     `json:"user_id"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+	Username  string    `json:"username"`
+	ID_2      int64     `json:"id_2"`
 }
 
 func (q *Queries) GetCommentsByPostID(ctx context.Context, postID int64) ([]GetCommentsByPostIDRow, error) {

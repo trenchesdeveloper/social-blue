@@ -209,6 +209,7 @@ func (s *server) loginHandler(w http.ResponseWriter, r *http.Request) {
 		"iat":     time.Now().Unix(),
 		"nbf":     time.Now().Unix(),
 		"iss":     s.config.APP_NAME,
+		"aud":     s.config.APP_NAME,
 	}
 
 	token, err := s.authenticator.GenerateToken(claims)

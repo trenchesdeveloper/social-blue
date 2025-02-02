@@ -1,19 +1,88 @@
 basePath: /v1
 definitions:
-  db.CreatePostParams:
+  db.CreatePostRow:
     properties:
       content:
         type: string
+      created_at:
+        type: string
+      id:
+        type: integer
       tags:
         items:
           type: string
         type: array
       title:
         type: string
+      updated_at:
+        type: string
       user_id:
         type: integer
+      version:
+        type: integer
+    type: object
+  db.GetCommentsByPostIDRow:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      id_2:
+        type: integer
+      post_id:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
     type: object
   db.GetUserByIDRow:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      last_name:
+        type: string
+      password:
+        items:
+          type: integer
+        type: array
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  db.UpdatePostRow:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+      version:
+        type: integer
+    type: object
+  db.User:
     properties:
       created_at:
         type: string
@@ -52,6 +121,31 @@ definitions:
     - content
     - title
     type: object
+  dto.GetPostWithCommentsDto:
+    properties:
+      comments:
+        items:
+          $ref: '#/definitions/db.GetCommentsByPostIDRow'
+        type: array
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/db.User'
+      user_id:
+        type: integer
+    type: object
   dto.LoginUserDto:
     properties:
       email:
@@ -85,6 +179,19 @@ definitions:
     - last_name
     - password
     - username
+    type: object
+  dto.UpdatePostDto:
+    properties:
+      content:
+        maxLength: 1000
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        maxLength: 100
+        type: string
     type: object
   dto.UserResponseDto:
     properties:
@@ -219,6 +326,125 @@ paths:
               type: string
             type: object
       summary: Check the health status of the service
+  /posts:
+    post:
+      consumes:
+      - application/json
+      description: Create a post
+      operationId: create-post
+      parameters:
+      - description: Post data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatPostDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.CreatePostRow'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Create a post
+      tags:
+      - posts
+  /posts/{postID}:
+    delete:
+      description: Delete a post by ID
+      operationId: delete-post
+      parameters:
+      - description: Post ID
+        in: path
+        name: postID
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+          schema: {}
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Delete a post
+      tags:
+      - posts
+    get:
+      description: Get a post by ID
+      operationId: get-post
+      parameters:
+      - description: Post ID
+        in: path
+        name: postID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetPostWithCommentsDto'
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Get a post
+      tags:
+      - posts
+    patch:
+      consumes:
+      - application/json
+      description: Update a post by ID
+      operationId: update-post
+      parameters:
+      - description: Post ID
+        in: path
+        name: postID
+        required: true
+        type: integer
+      - description: Post data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePostDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.UpdatePostRow'
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Update a post
+      tags:
+      - posts
   /users/{userID}:
     get:
       description: Get a user by ID

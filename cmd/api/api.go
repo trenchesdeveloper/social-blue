@@ -44,6 +44,7 @@ func (s *server) mount() http.Handler {
 		))
 
 		r.Route("/posts", func(r chi.Router) {
+			r.Use(s.AuthMiddleware)
 			r.Post("/", s.createPostHandler)
 			r.Route("/{postID}", func(r chi.Router) {
 				r.Use(s.postsContextMiddleware)
@@ -58,13 +59,14 @@ func (s *server) mount() http.Handler {
 
 		r.Route("/users", func(r chi.Router) {
 			r.Route("/{userID}", func(r chi.Router) {
-				r.Use(s.userContextMiddleware)
+				r.Use(s.AuthMiddleware)
 				r.Get("/", s.getUserHandler)
 				r.Put("/follow", s.followUserHandler)
 				r.Put("/unfollow", s.unfollowUserHandler)
 			})
 
 			r.Group(func(r chi.Router) {
+				r.Use(s.AuthMiddleware)
 				r.Get("/feed", s.GetUserFeedsHandler)
 			})
 

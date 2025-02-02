@@ -4,12 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"net/http"
+	"strconv"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/lib/pq"
 	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
 	"github.com/trenchesdeveloper/social-blue/internal/dto"
-	"net/http"
-	"strconv"
 )
 
 type UserContextKey string
@@ -78,15 +79,17 @@ func (s *server) followUserHandler(w http.ResponseWriter, r *http.Request) {
 		s.internalServerError(w, r, err)
 		return
 	}
-	var payload FollowUser
-	if err = readJSON(w, r, &payload); err != nil {
+
+	// get the user id from the request
+	followedID, err := strconv.ParseInt(chi.URLParam(r, "userID"), 10, 64)
+
+	if err != nil {
 		s.badRequestError(w, r, err)
 		return
 	}
-
 	// follow the user
 	err = s.store.FollowUser(r.Context(), db.FollowUserParams{
-		UserID:     payload.UserID,
+		UserID:     followedID,
 		FollowerID: followerUser.ID,
 	})
 
@@ -112,15 +115,19 @@ func (s *server) unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 		s.internalServerError(w, r, err)
 		return
 	}
-	var payload FollowUser
-	if err = readJSON(w, r, &payload); err != nil {
+
+	// get the user id from the request
+	unFollowUserID, err := strconv.ParseInt(chi.URLParam(r, "userID"), 10, 64)
+
+	if err != nil {
 		s.badRequestError(w, r, err)
 		return
 	}
 
+
 	// follow the user
 	err = s.store.UnFollowUser(r.Context(), db.UnFollowUserParams{
-		UserID:     payload.UserID,
+		UserID:     unFollowUserID,
 		FollowerID: followerUser.ID,
 	})
 
@@ -132,32 +139,6 @@ func (s *server) unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	// return the user
 	jsonResponse(w, http.StatusOK, followerUser)
-}
-
-func (s *server) userContextMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// get the user id from the url
-		userID := chi.URLParam(r, "userID")
-
-		parsedID, err := strconv.ParseInt(userID, 10, 64)
-
-		// fetch the user from the store
-		user, err := s.store.GetUserByID(r.Context(), parsedID)
-		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				s.notFoundError(w, r)
-				return
-			}
-			s.internalServerError(w, r, err)
-			return
-		}
-
-		// set the user in the context
-		ctx := context.WithValue(r.Context(), userKey, user)
-
-		// call the next handler
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
 }
 
 func (s *server) getUserFromContext(ctx context.Context) (db.GetUserByIDRow, error) {

@@ -21,12 +21,14 @@ const postKey postContextKey = "post"
 //	@Summary		Create a post
 //	@Description	Create a post
 //	@ID				create-post
+//	@Tags			posts
 //	@Accept			json
 //	@Produce		json
 //	@Param			input	body		dto.CreatPostDto	true	"Post data"
-//	@Success		200		{object}	db.CreatePostParams
+//	@Success		200		{object}	db.CreatePostRow
 //	@Failure		400		{object}	error
 //	@Failure		500		{object}	error
+//	@Router			/posts [post]
 func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
 	var input dto.CreatPostDto
 	if err := readJSON(w, r, &input); err != nil {
@@ -39,11 +41,20 @@ func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// get the user id from the request
+	user, err := s.getUserFromContext(r.Context())
+
+	s.logger.Info("got user from context", user)
+
+	if err != nil {
+		s.internalServerError(w, r, err)
+		return
+	}
+
 	post, err := s.store.CreatePost(r.Context(), db.CreatePostParams{
 		Title:   input.Title,
 		Content: input.Content,
-		//TODO: get the user id from the request
-		UserID: 1,
+		UserID: user.ID,
 	})
 
 	if err != nil {
@@ -55,6 +66,18 @@ func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// GetPost godoc
+//	@Summary		Get a post
+//	@Description	Get a post by ID
+//	@ID				get-post
+//	@Tags			posts
+//	@Produce		json
+//	@Param			postID	path		int	true	"Post ID"
+//	@Success		200		{object}	dto.GetPostWithCommentsDto
+//	@Failure		400		{object}	error
+//	@Failure		404		{object}	error
+//	@Failure		500		{object}	error
+//	@Router			/posts/{postID} [get]
 func (s *server) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	post, err := s.getPostFromCtx(r.Context())
 
@@ -85,6 +108,20 @@ func (s *server) getPostHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// UpdatePost godoc
+//	@Summary		Update a post
+//	@Description	Update a post by ID
+//	@ID				update-post
+//	@Tags			posts
+//	@Accept			json
+//	@Produce		json
+//	@Param			postID	path		int					true	"Post ID"
+//	@Param			input	body		dto.UpdatePostDto	true	"Post data"
+//	@Success		200		{object}	db.UpdatePostRow
+//	@Failure		400		{object}	error
+//	@Failure		404		{object}	error
+//	@Failure		500		{object}	error
+//	@Router			/posts/{postID} [patch]
 func (s *server) updatePostHandler(w http.ResponseWriter, r *http.Request) {
 	post, err := s.getPostFromCtx(r.Context())
 
@@ -126,6 +163,17 @@ func (s *server) updatePostHandler(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, http.StatusOK, UpdatedPost)
 }
 
+// DeletePost godoc
+//	@Summary		Delete a post
+//	@Description	Delete a post by ID
+//	@ID				delete-post
+//	@Tags			posts
+//	@Param			postID	path		int	true	"Post ID"
+//	@Success		204		{object}	error
+//	@Failure		400		{object}	error
+//	@Failure		404		{object}	error
+//	@Failure		500		{object}	error
+//	@Router			/posts/{postID} [delete]
 func (s *server) deletePostHandler(w http.ResponseWriter, r *http.Request) {
 	postID := chi.URLParam(r, "postID")
 
