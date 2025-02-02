@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/trenchesdeveloper/social-blue/config"
+	"github.com/trenchesdeveloper/social-blue/internal/auth"
 	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
 	"github.com/trenchesdeveloper/social-blue/internal/pkg/mailer"
 	"go.uber.org/zap"
@@ -75,6 +76,11 @@ func main() {
 	}
 
 	app.mailConfig = mail
+
+
+	// add authenticator
+	authenticator := auth.NewJWTAuthenticator(cfg.AppSecret, cfg.APP_NAME, cfg.APP_NAME)
+	app.authenticator = authenticator
 
 	mux := app.mount()
 	if err := app.start(mux); err != nil {

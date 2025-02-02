@@ -7,8 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
 	"github.com/trenchesdeveloper/social-blue/internal/dto"
@@ -158,4 +160,62 @@ func (s *server) activateUserHandler(w http.ResponseWriter, r *http.Request) {
 	// send email to user
 
 	jsonResponse(w, http.StatusOK, nil, "User activated successfully")
+}
+
+// @Summary		Login a user
+// @Description	Login a user
+// @Tags			users
+// @Accept			json
+// @Produce		json
+// @Param			input	body		dto.LoginUserDto	true	"User data"
+// @Success		200		{object}	string
+// @Failure		400		{object}	error
+// @Failure		401		{object}	error
+// @Router			/auth/login [post]
+func (s *server) loginHandler(w http.ResponseWriter, r *http.Request) {
+	var input dto.LoginUserDto
+	if err := readJSON(w, r, &input); err != nil {
+		s.badRequestError(w, r, err)
+		return
+	}
+
+	if err := Validate.Struct(input); err != nil {
+		writeJSONError(w, http.StatusBadRequest, "Validation failed: "+err.Error())
+		return
+	}
+
+	user, err := s.store.GetActiveUserByEmail(r.Context(), input.Email)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			s.unauthorizedError(w, r, db.ErrInvalidCredentials)
+			return
+		default:
+			s.internalServerError(w, r, err)
+			return
+		}
+	}
+
+	err = bcrypt.CompareHashAndPassword(user.Password, []byte(input.Password))
+	if err != nil {
+		s.unauthorizedError(w, r, db.ErrInvalidCredentials)
+		return
+	}
+
+	claims := jwt.MapClaims{
+		"user_id": user.ID,
+		"email":   user.Email,
+		"exp":     time.Now().Add(time.Hour * 24 * 3).Unix(),
+		"iat":     time.Now().Unix(),
+		"nbf":     time.Now().Unix(),
+		"iss":     s.config.APP_NAME,
+	}
+
+	token, err := s.authenticator.GenerateToken(claims)
+	if err != nil {
+		s.internalServerError(w, r, err)
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, token)
 }

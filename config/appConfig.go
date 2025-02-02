@@ -20,6 +20,7 @@ type AppConfig struct {
 	MAILTRAP_API_KEY string `mapstructure:"MAILTRAP_API_KEY"`
 	BASIC_AUTH_USERNAME string `mapstructure:"BASIC_AUTH_USERNAME"`
 	BASIC_AUTH_PASSWORD string `mapstructure:"BASIC_AUTH_PASSWORD"`
+	APP_NAME string `mapstructure:"APP_NAME"`
 }
 
 type MailConfig struct {
@@ -45,6 +46,7 @@ func LoadConfig(path string) (*AppConfig, error) {
 	viper.BindEnv("MAILTRAP_API_KEY", "MAILTRAP_API_KEY")
 	viper.BindEnv("BASIC_AUTH_USERNAME", "BASIC_AUTH_USERNAME")
 	viper.BindEnv("BASIC_AUTH_PASSWORD", "BASIC_AUTH_PASSWORD")
+	viper.BindEnv("APP_NAME", "APP_NAME")
 
 	// Check if environment is set to production
 	if viper.GetString("ENVIRONMENT") != "production" {

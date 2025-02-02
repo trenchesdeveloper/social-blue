@@ -39,3 +39,13 @@ WHERE ui.token = $1 AND ui.expiry > $2;
 UPDATE users
 SET is_active = $2
 WHERE id = $1;
+
+-- name: GetUserByEmail :one
+SELECT id, username, email, password, created_at, updated_at, is_active
+FROM users
+WHERE email = $1;
+
+-- name: GetActiveUserByEmail :one
+SELECT id, username, email, password, created_at, updated_at, is_active
+FROM users
+WHERE email = $1 AND is_active = true;

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/trenchesdeveloper/social-blue/docs" //This is required for swaggo to find your docs
+	"github.com/trenchesdeveloper/social-blue/internal/auth"
 	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
 	"github.com/trenchesdeveloper/social-blue/internal/pkg/mailer"
 )
@@ -24,6 +25,7 @@ type server struct {
 	logger     *zap.SugaredLogger
 	mailConfig config.MailConfig
 	mailer     mailer.Client
+	authenticator auth.Authenticator
 }
 
 func (s *server) mount() http.Handler {
@@ -72,6 +74,7 @@ func (s *server) mount() http.Handler {
 		r.Route("/auth", func(r chi.Router) {
 			r.Put("/activate/{token}", s.activateUserHandler)
 			r.Post("/register", s.registerUserHandler)
+			r.Post("/login", s.loginHandler)
 		})
 	})
 	return r

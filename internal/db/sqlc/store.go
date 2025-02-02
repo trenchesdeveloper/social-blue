@@ -14,6 +14,7 @@ var (
 	ErrDuplicateEmail    = errors.New("email already exists")
 	ErrDuplicateUsername = errors.New("username already exists")
 	ErrInvalidToken      = errors.New("invalid token")
+	ErrInvalidCredentials = errors.New("invalid credentials")
 )
 
 type Store interface {
