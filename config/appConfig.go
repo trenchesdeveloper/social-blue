@@ -18,6 +18,8 @@ type AppConfig struct {
 	SendgridFromEmail string `mapstructure:"SENDGRID_FROM_EMAIL"`
 	FrontendURL  string `mapstructure:"FRONTEND_URL"`
 	MAILTRAP_API_KEY string `mapstructure:"MAILTRAP_API_KEY"`
+	BASIC_AUTH_USERNAME string `mapstructure:"BASIC_AUTH_USERNAME"`
+	BASIC_AUTH_PASSWORD string `mapstructure:"BASIC_AUTH_PASSWORD"`
 }
 
 type MailConfig struct {
@@ -41,6 +43,8 @@ func LoadConfig(path string) (*AppConfig, error) {
 	viper.BindEnv("SENDGRID_FROM_EMAIL", "SENDGRID_FROM_EMAIL")
 	viper.BindEnv("FRONTEND_URL", "FRONTEND_URL")
 	viper.BindEnv("MAILTRAP_API_KEY", "MAILTRAP_API_KEY")
+	viper.BindEnv("BASIC_AUTH_USERNAME", "BASIC_AUTH_USERNAME")
+	viper.BindEnv("BASIC_AUTH_PASSWORD", "BASIC_AUTH_PASSWORD")
 
 	// Check if environment is set to production
 	if viper.GetString("ENVIRONMENT") != "production" {

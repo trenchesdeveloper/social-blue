@@ -35,7 +35,7 @@ func (s *server) mount() http.Handler {
 
 	r.Use(middleware.Timeout(60 * time.Second))
 	r.Route("/v1", func(r chi.Router) {
-		r.Get("/health", s.healthCheckHandler)
+		r.With(s.BasicAuthMiddleware).Get("/health", s.healthCheckHandler)
 		docsURL := fmt.Sprintf("%s/swagger/doc.json", s.config.ServerPort)
 		r.Get("/swagger/*", httpSwagger.Handler(
 			httpSwagger.URL(docsURL), //The url pointing to API definition

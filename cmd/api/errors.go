@@ -22,3 +22,17 @@ func (s *server) badRequestError(w http.ResponseWriter, r *http.Request, err err
 	s.logger.Warnf("Bad request: %s %s", r.Method, r.URL.Path)
 	writeJSONError(w, http.StatusBadRequest, err.Error())
 }
+
+func (s *server) unauthorizedError(w http.ResponseWriter, r *http.Request, err error) {
+	s.logger.Warnf("Unauthorized: %s %s", r.Method, r.URL.Path)
+
+	writeJSONError(w, http.StatusUnauthorized, err.Error())
+}
+
+func (s *server) unauthorizedBasicError(w http.ResponseWriter, r *http.Request, err error) {
+	s.logger.Warnf("Unauthorized basic error: %s %s", r.Method, r.URL.Path)
+
+	w.Header().Set("WWW-Authenticate", `Basic realm="Restricted", charset="UTF-8"`)
+
+	writeJSONError(w, http.StatusUnauthorized, err.Error())
+}
