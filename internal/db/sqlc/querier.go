@@ -19,6 +19,8 @@ type Querier interface {
 	GetActiveUserByEmail(ctx context.Context, email string) (GetActiveUserByEmailRow, error)
 	GetCommentsByPostID(ctx context.Context, postID int64) ([]GetCommentsByPostIDRow, error)
 	GetPostByID(ctx context.Context, id int64) (GetPostByIDRow, error)
+	GetRoleByID(ctx context.Context, id int64) (Role, error)
+	GetRoleByName(ctx context.Context, name string) (Role, error)
 	GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error)
 	GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error)
 	GetUserByUsername(ctx context.Context, username string) (GetUserByUsernameRow, error)

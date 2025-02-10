@@ -34,6 +34,13 @@ type Post struct {
 	Version   int64     `json:"version"`
 }
 
+type Role struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Level       int32  `json:"level"`
+	Description string `json:"description"`
+}
+
 type User struct {
 	ID        int64     `json:"id"`
 	FirstName string    `json:"first_name"`
@@ -44,6 +51,7 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	IsActive  bool      `json:"is_active"`
+	RoleID    int64     `json:"role_id"`
 }
 
 type UserInvitation struct {

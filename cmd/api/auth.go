@@ -63,6 +63,7 @@ func (s *server) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 		Username:  input.Username,
 		Email:     input.Email,
 		Password:  hashedPassword,
+		RoleID:   1,
 	})
 
 	if err != nil {

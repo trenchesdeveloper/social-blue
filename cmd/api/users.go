@@ -24,7 +24,7 @@ const userKey UserContextKey = "user"
 //	@ID				get-user
 //	@Produce		json
 //	@Param			userID	path		int	true	"User ID"
-//	@Success		200		{object}	dto.UserResponseDto
+//	@Success		200		{object}	UserWithRole
 //	@Failure		400		{object}	error
 //	@Failure		404		{object}	error
 //	@Failure		500		{object}	error
@@ -64,7 +64,7 @@ type FollowUser struct {
 //	@ID				follow-user
 //	@Produce		json
 //	@Param			userID	path		int	true	"User ID"
-//	@Success		200		{object}	db.GetUserByIDRow
+//	@Success		200		{object}	UserWithRole
 //	@Failure		400		{object}	error
 //	@Failure		404		{object}	error
 //	@Failure		500		{object}	error
@@ -141,10 +141,10 @@ func (s *server) unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, http.StatusOK, followerUser)
 }
 
-func (s *server) getUserFromContext(ctx context.Context) (db.GetUserByIDRow, error) {
-	user, ok := ctx.Value(userKey).(db.GetUserByIDRow)
+func (s *server) getUserFromContext(ctx context.Context) (UserWithRole, error) {
+	user, ok := ctx.Value(userKey).(UserWithRole)
 	if !ok {
-		return db.GetUserByIDRow{}, errors.New("could not get user from context")
+		return UserWithRole{}, errors.New("could not get user from context")
 	}
 
 	return user, nil

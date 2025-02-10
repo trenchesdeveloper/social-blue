@@ -49,8 +49,10 @@ func (s *server) mount() http.Handler {
 			r.Route("/{postID}", func(r chi.Router) {
 				r.Use(s.postsContextMiddleware)
 				r.Get("/", s.getPostHandler)
-				r.Patch("/", s.updatePostHandler)
-				r.Delete("/", s.deletePostHandler)
+				r.With(s.checkPostOwnership("moderator")).
+				Patch("/", s.updatePostHandler)
+				r.With(s.checkPostOwnership("admin")).
+				Delete("/", s.deletePostHandler)
 			})
 
 			//r.Put("/{id}", s.updatePost)

@@ -11,9 +11,9 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (first_name, last_name, username, password, email)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, first_name, last_name, username, email, created_at, updated_at
+INSERT INTO users (first_name, last_name, username, password, email, role_id)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, first_name, last_name, username, email,role_id, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -22,6 +22,7 @@ type CreateUserParams struct {
 	Username  string `json:"username"`
 	Password  []byte `json:"password"`
 	Email     string `json:"email"`
+	RoleID    int64  `json:"role_id"`
 }
 
 type CreateUserRow struct {
@@ -30,6 +31,7 @@ type CreateUserRow struct {
 	LastName  string    `json:"last_name"`
 	Username  string    `json:"username"`
 	Email     string    `json:"email"`
+	RoleID    int64     `json:"role_id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -41,6 +43,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 		arg.Username,
 		arg.Password,
 		arg.Email,
+		arg.RoleID,
 	)
 	var i CreateUserRow
 	err := row.Scan(
@@ -49,6 +52,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 		&i.LastName,
 		&i.Username,
 		&i.Email,
+		&i.RoleID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -66,7 +70,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getActiveUserByEmail = `-- name: GetActiveUserByEmail :one
-SELECT id, username, email, password, created_at, updated_at, is_active
+SELECT id, username, email, password, created_at, updated_at, is_active, role_id
 FROM users
 WHERE email = $1 AND is_active = true
 `
@@ -79,6 +83,7 @@ type GetActiveUserByEmailRow struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	IsActive  bool      `json:"is_active"`
+	RoleID    int64     `json:"role_id"`
 }
 
 func (q *Queries) GetActiveUserByEmail(ctx context.Context, email string) (GetActiveUserByEmailRow, error) {
@@ -92,12 +97,13 @@ func (q *Queries) GetActiveUserByEmail(ctx context.Context, email string) (GetAc
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.IsActive,
+		&i.RoleID,
 	)
 	return i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, username, email, password, created_at, updated_at, is_active
+SELECT id, username, email, password, created_at, updated_at, is_active, role_id
 FROM users
 WHERE email = $1
 `
@@ -110,6 +116,7 @@ type GetUserByEmailRow struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	IsActive  bool      `json:"is_active"`
+	RoleID    int64     `json:"role_id"`
 }
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
@@ -123,26 +130,32 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEm
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.IsActive,
+		&i.RoleID,
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, first_name, last_name, username, email, password, created_at, updated_at, is_active
-FROM users
-WHERE id = $1
+SELECT users.id, first_name, last_name, username, password, email, created_at, updated_at, is_active, role_id, roles.id, name, level, description
+FROM users JOIN roles ON users.role_id = roles.id
+WHERE users.id = $1
 `
 
 type GetUserByIDRow struct {
-	ID        int64     `json:"id"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	Username  string    `json:"username"`
-	Email     string    `json:"email"`
-	Password  []byte    `json:"password"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	IsActive  bool      `json:"is_active"`
+	ID          int64     `json:"id"`
+	FirstName   string    `json:"first_name"`
+	LastName    string    `json:"last_name"`
+	Username    string    `json:"username"`
+	Password    []byte    `json:"password"`
+	Email       string    `json:"email"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	IsActive    bool      `json:"is_active"`
+	RoleID      int64     `json:"role_id"`
+	ID_2        int64     `json:"id_2"`
+	Name        string    `json:"name"`
+	Level       int32     `json:"level"`
+	Description string    `json:"description"`
 }
 
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error) {
@@ -153,17 +166,22 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, er
 		&i.FirstName,
 		&i.LastName,
 		&i.Username,
-		&i.Email,
 		&i.Password,
+		&i.Email,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.IsActive,
+		&i.RoleID,
+		&i.ID_2,
+		&i.Name,
+		&i.Level,
+		&i.Description,
 	)
 	return i, err
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, username, password, email, created_at, updated_at, is_active
+SELECT id, username, password, email, created_at, updated_at, is_active, role_id
 FROM users
 WHERE username = $1
 `
@@ -176,6 +194,7 @@ type GetUserByUsernameRow struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	IsActive  bool      `json:"is_active"`
+	RoleID    int64     `json:"role_id"`
 }
 
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) (GetUserByUsernameRow, error) {
@@ -189,12 +208,13 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (GetUs
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.IsActive,
+		&i.RoleID,
 	)
 	return i, err
 }
 
 const getUserFromInvitation = `-- name: GetUserFromInvitation :one
-SELECT u.id, u.username, u.email, u.created_at, u.updated_at, u.is_active
+SELECT u.id, u.username, u.email, u.created_at, u.updated_at, u.is_active, u.role_id
 FROM users u
 JOIN user_invitations ui ON u.id = ui.user_id
 WHERE ui.token = $1 AND ui.expiry > $2
@@ -212,6 +232,7 @@ type GetUserFromInvitationRow struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	IsActive  bool      `json:"is_active"`
+	RoleID    int64     `json:"role_id"`
 }
 
 func (q *Queries) GetUserFromInvitation(ctx context.Context, arg GetUserFromInvitationParams) (GetUserFromInvitationRow, error) {
@@ -224,6 +245,7 @@ func (q *Queries) GetUserFromInvitation(ctx context.Context, arg GetUserFromInvi
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.IsActive,
+		&i.RoleID,
 	)
 	return i, err
 }

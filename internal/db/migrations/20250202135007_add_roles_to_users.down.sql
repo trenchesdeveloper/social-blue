@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS roles;
+ALTER TABLE users DROP COLUMN role_id;

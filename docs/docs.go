@@ -351,7 +351,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.UserResponseDto"
+                            "$ref": "#/definitions/main.UserWithRole"
                         }
                     },
                     "400": {
@@ -395,7 +395,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/db.GetUserByIDRow"
+                            "$ref": "#/definitions/main.UserWithRole"
                         }
                     },
                     "400": {
@@ -473,41 +473,6 @@ const docTemplate = `{
                 }
             }
         },
-        "db.GetUserByIDRow": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "first_name": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "is_active": {
-                    "type": "boolean"
-                },
-                "last_name": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
         "db.UpdatePostRow": {
             "type": "object",
             "properties": {
@@ -566,6 +531,9 @@ const docTemplate = `{
                     "items": {
                         "type": "integer"
                     }
+                },
+                "role_id": {
+                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "string"
@@ -702,9 +670,15 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UserResponseDto": {
+        "main.UserWithRole": {
             "type": "object",
             "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
@@ -714,7 +688,34 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "id_2": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
                 "last_name": {
+                    "type": "string"
+                },
+                "level": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "role_id": {
+                    "type": "integer"
+                },
+                "role_level": {
+                    "type": "integer"
+                },
+                "updated_at": {
                     "type": "string"
                 },
                 "username": {
@@ -739,6 +740,9 @@ const docTemplate = `{
                 },
                 "last_name": {
                     "type": "string"
+                },
+                "role_id": {
+                    "type": "integer"
                 },
                 "token": {
                     "type": "string"
