@@ -20,3 +20,20 @@ services:
       POSTGRES_DB: social
     ports:
       - "5434:5432"
+
+  redis:
+    container_name: social_redis
+    image: redis:6.2-alpine
+    ports:
+      - "6379:6379"
+
+  redis-commander:
+    container_name: social_redis_commander
+    image: rediscommander/redis-commander:latest
+    ports:
+      - "8081:8081"
+    environment:
+      REDIS_HOSTS: redis
+    depends_on:
+      - redis
+      

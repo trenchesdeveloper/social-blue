@@ -21,6 +21,10 @@ type AppConfig struct {
 	BASIC_AUTH_USERNAME string `mapstructure:"BASIC_AUTH_USERNAME"`
 	BASIC_AUTH_PASSWORD string `mapstructure:"BASIC_AUTH_PASSWORD"`
 	APP_NAME string `mapstructure:"APP_NAME"`
+	REDIS_ENABLED bool `mapstructure:"REDIS_ENABLED"`
+	REDIS_HOST string `mapstructure:"REDIS_HOST"`
+	REDIS_PASSWORD string `mapstructure:"REDIS_PASSWORD"`
+	REDIS_DB int `mapstructure:"REDIS_DB"`
 }
 
 type MailConfig struct {
@@ -47,6 +51,10 @@ func LoadConfig(path string) (*AppConfig, error) {
 	viper.BindEnv("BASIC_AUTH_USERNAME", "BASIC_AUTH_USERNAME")
 	viper.BindEnv("BASIC_AUTH_PASSWORD", "BASIC_AUTH_PASSWORD")
 	viper.BindEnv("APP_NAME", "APP_NAME")
+	viper.BindEnv("REDIS_ENABLED", "REDIS_ENABLED")
+	viper.BindEnv("REDIS_HOST", "REDIS_HOST")
+	viper.BindEnv("REDIS_PASSWORD", "REDIS_PASSWORD")
+	viper.BindEnv("REDIS_DB", "REDIS_DB")
 
 	// Check if environment is set to production
 	if viper.GetString("ENVIRONMENT") != "production" {

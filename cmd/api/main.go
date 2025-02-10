@@ -8,6 +8,7 @@ import (
 
 	"github.com/trenchesdeveloper/social-blue/config"
 	"github.com/trenchesdeveloper/social-blue/internal/auth"
+	"github.com/trenchesdeveloper/social-blue/internal/cache"
 	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
 	"github.com/trenchesdeveloper/social-blue/internal/pkg/mailer"
 	"go.uber.org/zap"
@@ -77,6 +78,14 @@ func main() {
 
 	app.mailConfig = mail
 
+	// Cache
+	var redisConfig *cache.RedisConfig
+	if cfg.REDIS_ENABLED {
+		redisConfig = cache.NewRedisCache(cfg.REDIS_HOST, cfg.REDIS_PASSWORD, cfg.REDIS_DB)
+		logger.Info("redis connected")
+	}
+
+	app.cacheStore = redisConfig
 
 	// add authenticator
 	authenticator := auth.NewJWTAuthenticator(cfg.AppSecret, cfg.APP_NAME, cfg.APP_NAME)

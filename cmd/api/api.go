@@ -15,6 +15,7 @@ import (
 
 	"github.com/trenchesdeveloper/social-blue/docs" //This is required for swaggo to find your docs
 	"github.com/trenchesdeveloper/social-blue/internal/auth"
+	"github.com/trenchesdeveloper/social-blue/internal/cache"
 	db "github.com/trenchesdeveloper/social-blue/internal/db/sqlc"
 	"github.com/trenchesdeveloper/social-blue/internal/pkg/mailer"
 )
@@ -26,6 +27,7 @@ type server struct {
 	mailConfig config.MailConfig
 	mailer     mailer.Client
 	authenticator auth.Authenticator
+	cacheStore cache.CacheStore
 }
 
 func (s *server) mount() http.Handler {
